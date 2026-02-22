@@ -38,10 +38,8 @@
             <form id="entryForm" onsubmit="saveData(event)">
                 <div class="space-y-3 text-sm">
                     <div>
-                        <div>
-    <label class="font-bold">Photo *</label>
-    <input type="file" id="photoInput" accept="image/*" required class="w-full border p-2 rounded bg-white">
-</div>
+                        <label class="font-bold">Photo *</label>
+<input type="file" id="photoInput" accept="image/*" required class="w-full border p-2 rounded bg-white">
                     </div>
                     <div>
                         <label class="font-bold">Name *</label>
@@ -205,35 +203,54 @@
         }
 
         async function saveData(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "Saving...";
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.innerText = "Saving..."; btn.disabled = true;
 
-            const photoFile = document.getElementById('photoInput').files[0];
-            const reader = new FileReader();
-            reader.readAsDataURL(photoFile);
-            reader.onload = async () => {
-                const payload = {
-                    action: 'save',
-                    name: document.getElementById('name').value,
-                    relation: document.getElementById('relation').value,
-                    guardian: document.getElementById('guardian').value,
-                    mobile: document.getElementById('mobile').value,
-                    age: document.getElementById('age').value,
-                    status: document.getElementById('status').value,
-                    tehsil: document.getElementById('tehsil').value,
-                    mantra: document.getElementById('mantra').value,
-                    occupation: document.getElementById('occupation').value,
-                    address: document.getElementById('address').value,
-                    image: reader.result
-                };
+    const fileInput = document.getElementById('photoInput');
+    if (fileInput.files.length === 0) {
+        alert("कृपया फोटो चुनें!");
+        btn.innerText = "Submit"; btn.disabled = false;
+        return;
+    }
 
-                await fetch(SCRIPT_URL + "?action=save", { method: 'POST', body: JSON.stringify(payload) });
-                alert("डाटा सेव हो गया!");
+    const reader = new FileReader();
+    reader.readAsDataURL(fileInput.files[0]);
+    reader.onload = async () => {
+        const payload = {
+            action: 'save',
+            name: document.getElementById('name').value,
+            relation: document.getElementById('relation').value,
+            guardian: document.getElementById('guardian').value,
+            mobile: document.getElementById('mobile').value,
+            age: document.getElementById('age').value,
+            status: document.getElementById('status').value,
+            tehsil: document.getElementById('tehsil').value,
+            mantra: document.getElementById('mantra').value,
+            occupation: document.getElementById('occupation').value,
+            address: document.getElementById('address').value,
+            image: reader.result
+        };
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            const result = await response.text();
+            if (result === "Success") {
+                alert("डाटा सफलतापूर्वक सेव हो गया!");
                 location.reload();
-            };
+            } else {
+                throw new Error(result);
+            }
+        } catch (error) {
+            console.error("Save Error:", error);
+            alert("सेव करने में समस्या आई: " + error.message);
+            btn.innerText = "Submit"; btn.disabled = false;
         }
-
+    };
+}
         loadData();
     </script>
 </body>
