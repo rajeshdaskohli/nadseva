@@ -5,199 +5,278 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sewa Management Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .active-tab { border-bottom: 4px solid #1e40af; color: #1e40af; font-weight: bold; }
+        @media print { .no-print { display: none; } }
+    </style>
 </head>
-<body class="bg-slate-50 pb-24">
-    <div class="bg-blue-800 p-4 sticky top-0 z-50 shadow-xl">
-        <input type="text" id="srch" onkeyup="render()" placeholder="नाम या मोबाइल से सर्च..." class="w-full p-3 rounded-xl outline-none shadow-inner mb-3">
-        <div class="flex justify-around text-white font-bold text-sm">
-            <button onclick="setTab('All')" id="tAll" class="border-b-4 border-white pb-1">All List</button>
-            <button onclick="setTab('Active')" id="tActive" class="opacity-60">Active</button>
-            <button onclick="setTab('Inactive')" id="tInactive" class="opacity-60">Inactive</button>
+<body class="bg-slate-50 pb-20">
+
+    <div class="bg-blue-700 p-4 sticky top-0 z-50 shadow-md no-print">
+        <h1 class="text-white text-center font-bold text-lg mb-3">Sewa Management System</h1>
+        <div class="flex gap-2">
+            <input type="text" id="searchInput" onkeyup="renderList()" placeholder="नाम या नंबर से सर्च करें..." class="w-full p-3 rounded-xl outline-none shadow-inner text-sm">
+            <button onclick="toggleSelectionMode()" id="selectBtn" class="bg-white text-blue-700 px-3 py-2 rounded-xl text-xs font-bold shadow">Select PDF</button>
         </div>
     </div>
 
-    <div id="list" class="p-4 space-y-3"></div>
+    <div class="flex justify-around bg-white border-b sticky top-[116px] z-40 no-print">
+        <button onclick="setTab('All')" id="tabAll" class="flex-1 py-3 active-tab text-sm">All List</button>
+        <button onclick="setTab('Active')" id="tabActive" class="flex-1 py-3 text-gray-500 text-sm">Active</button>
+        <button onclick="setTab('Inactive')" id="tabInactive" class="flex-1 py-3 text-gray-500 text-sm">Inactive</button>
+    </div>
 
-    <button onclick="showModal('regMod')" class="fixed bottom-6 right-6 bg-blue-600 text-white w-16 h-16 rounded-full shadow-2xl text-4xl">+</button>
+    <div id="pdfBar" class="hidden bg-green-600 p-3 text-white flex justify-between items-center sticky top-[164px] z-30 no-print">
+        <span id="selectedCount">0 Selected</span>
+        <button onclick="exportToPDF()" class="bg-white text-green-700 px-4 py-1 rounded-lg font-bold text-sm">Export PDF</button>
+    </div>
 
-    <div id="profMod" class="fixed inset-0 bg-black/80 hidden z-[60] p-4 flex items-center justify-center">
+    <div id="mainList" class="p-4 space-y-3">
+        <div class="text-center py-10 text-gray-400">Loading Data...</div>
+    </div>
+
+    <div id="profileModal" class="fixed inset-0 bg-black/80 hidden z-[60] p-4 flex items-center justify-center no-print">
         <div class="bg-white rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto p-6 relative">
-            <button onclick="hideModal('profMod')" class="absolute top-4 right-4 text-3xl font-light">&times;</button>
-            <div id="profData"></div>
-            <hr class="my-6">
-            <h3 class="font-bold text-blue-700 mb-3">Add Shift / Sewa Points</h3>
-            <div class="space-y-3">
-                <select id="sTime" class="w-full p-3 border rounded-xl bg-gray-50"></select>
-                <select id="sType" class="w-full p-3 border rounded-xl bg-gray-50"></select>
-                <input type="number" id="sPts" placeholder="पॉइंट्स (जैसे 1 या 2)" class="w-full p-3 border rounded-xl">
-                <button id="addSwaBtn" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold">Record Sewa</button>
+            <button onclick="closeModal('profileModal')" class="absolute top-4 right-4 text-3xl">&times;</button>
+            <div id="profileContent"></div>
+            
+            <div class="mt-6 border-t pt-4">
+                <h3 class="font-bold text-blue-700 mb-3">Add 2-Hour Shift</h3>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <select id="shiftTime" class="p-2 border rounded-lg text-xs"></select>
+                    <select id="sewaType" class="p-2 border rounded-lg text-xs"></select>
+                </div>
+                <div class="flex gap-2">
+                    <input type="number" id="sewaPoints" value="1" placeholder="Points" class="w-20 p-2 border rounded-lg">
+                    <button id="recordSewaBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">Add Service</button>
+                </div>
             </div>
-            <div id="swaHist" class="mt-6 text-sm"></div>
+            <div id="historyLogs" class="mt-6 space-y-2 text-[11px]"></div>
         </div>
     </div>
 
-    <div id="regMod" class="fixed inset-0 bg-black/80 hidden z-[60] p-4 overflow-y-auto">
-        <div class="bg-white rounded-3xl w-full max-w-md mx-auto my-5 p-6 shadow-2xl">
-            <h2 class="text-xl font-bold mb-4 text-center text-blue-800">Registration</h2>
-            <form id="mainForm" onsubmit="handleSave(event)" class="space-y-3 text-sm">
-                <input type="file" id="pic" accept="image/*" class="w-full border p-2 rounded-xl">
-                <input type="text" id="name" placeholder="नाम" required class="w-full p-3 border rounded-xl">
-                <div class="flex gap-2">
-                    <select id="rel" class="w-1/3 p-3 border rounded-xl"></select>
-                    <input type="text" id="guard" placeholder="अभिभावक का नाम" required class="w-2/3 p-3 border rounded-xl">
+    <button onclick="openModal('regModal')" class="fixed bottom-6 right-6 bg-blue-600 text-white w-16 h-16 rounded-full shadow-2xl text-4xl flex items-center justify-center no-print">+</button>
+
+    <div id="regModal" class="fixed inset-0 bg-black/80 hidden z-[60] p-4 overflow-y-auto no-print">
+        <div class="bg-white rounded-3xl w-full max-w-md mx-auto p-6 shadow-2xl">
+            <h2 class="text-xl font-bold mb-5 text-center text-blue-800">New Data Entry</h2>
+            <form id="regForm" onsubmit="handleFormSubmit(event)" class="space-y-4 text-sm">
+                <div class="text-center">
+                    <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    <label for="photoInput" class="cursor-pointer inline-block bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-300">
+                        <span id="photoText">📷 Capture/Upload Photo</span>
+                        <img id="imagePreview" class="hidden w-24 h-24 rounded-full mx-auto object-cover border-2 border-blue-400">
+                    </label>
                 </div>
-                <input type="number" id="mob" placeholder="मोबाइल (10 अंक)" required class="w-full p-3 border rounded-xl">
+                <input type="text" id="regName" placeholder="Full Name" required class="w-full p-3 border rounded-xl">
                 <div class="flex gap-2">
-                    <input type="number" id="age" placeholder="उम्र" class="w-1/2 p-3 border rounded-xl">
-                    <select id="stat" class="w-1/2 p-3 border rounded-xl"><option>Active</option><option>Inactive</option></select>
+                    <select id="regRel" class="w-1/3 p-3 border rounded-xl"></select>
+                    <input type="text" id="regGuard" placeholder="Guardian Name" required class="w-2/3 p-3 border rounded-xl">
                 </div>
-                <select id="teh" class="w-full p-3 border rounded-xl"></select>
-                <select id="man" class="w-full p-3 border rounded-xl"></select>
-                <select id="occ" class="w-full p-3 border rounded-xl"></select>
-                <textarea id="addr" placeholder="पूरा पता" class="w-full p-3 border rounded-xl h-16"></textarea>
-                <button type="submit" id="saveBtn" class="w-full bg-blue-700 text-white py-4 rounded-xl font-bold">SUBMIT DATA</button>
-                <button type="button" onclick="hideModal('regMod')" class="w-full py-2 text-gray-400">Cancel</button>
+                <input type="number" id="regMob" placeholder="Mobile (10 digits)" required class="w-full p-3 border rounded-xl">
+                <div class="flex gap-2">
+                    <input type="number" id="regAge" placeholder="Age" class="w-1/2 p-3 border rounded-xl">
+                    <select id="regStatus" class="w-1/2 p-3 border rounded-xl"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+                </div>
+                <select id="regTeh" class="w-full p-3 border rounded-xl"></select>
+                <select id="regMan" class="w-full p-3 border rounded-xl"></select>
+                <select id="regOcc" class="w-full p-3 border rounded-xl"></select>
+                <textarea id="regAddr" placeholder="Address" class="w-full p-3 border rounded-xl h-20"></textarea>
+                <button type="submit" id="submitBtn" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg">SAVE DATA</button>
             </form>
         </div>
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbz7wTGyCYDUiqQonJbt8Eab3OBJFQK-zF9V96X_RQcjm_XhjAAvft3AIzdDyOi8gDjO/exec";
-        let db = [], drops = [], logs = [], activeTab = 'All';
+        // अपनी Web App URL यहाँ डालें
+        const API_URL = "https://script.google.com/macros/s/AKfycbw2750EAb-OwkkJGYJesCAgAHquixlv0XbC1-yGIuOUVOvhSsKtTtk_ocTVdohmyX_6/exec"; 
+
+        let allData = [], dropdowns = {}, sewaLogs = [], activeTab = 'All', selectionMode = false, selectedIds = new Set();
 
         async function init() {
             try {
-                const r = await fetch(API);
-                const d = await r.json();
-                db = d.users.slice(1);
-                logs = d.logs.slice(1);
-                drops = d.drops;
-                
+                const res = await fetch(API_URL);
+                const data = await res.json();
+                allData = data.users.slice(1);
+                sewaLogs = data.logs.slice(1);
+                dropdowns = data.drops;
+
                 const fill = (id, col) => {
-                    const list = d.drops.slice(1).map(row => row[col-1]).filter(String);
+                    const list = dropdowns.slice(1).map(r => r[col-1]).filter(String);
                     document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join('');
                 };
-                fill('rel', 1); fill('teh', 2); fill('man', 3); fill('occ', 4);
-                fill('sType', 5); fill('sTime', 6);
-                render();
-            } catch(e) { alert("Data Load Failed!"); }
+                fill('regRel', 1); fill('regTeh', 2); fill('regMan', 3); fill('regOcc', 4);
+                fill('sewaType', 5); fill('shiftTime', 6);
+                renderList();
+            } catch (e) { document.getElementById('mainList').innerHTML = `<p class="text-red-500 text-center">Load Failed! Check API URL.</p>`; }
         }
 
-        function render() {
-            const term = document.getElementById('srch').value.toLowerCase();
-            let data = db;
-            if(activeTab !== 'All') data = db.filter(u => u[11] === activeTab);
-            if(term) data = data.filter(u => u[3].toLowerCase().includes(term) || u[6].toString().includes(term));
+        function renderList() {
+            const container = document.getElementById('mainList');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = allData;
 
-            document.getElementById('list').innerHTML = data.map(u => `
-                <div onclick="openProfile('${u[0]}')" class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-4 active:scale-95 transition">
-                    <img src="${u[2]}" class="w-14 h-14 rounded-full object-cover bg-gray-200">
+            if (activeTab !== 'All') filtered = filtered.filter(u => u[11] === activeTab);
+            if (search) filtered = filtered.filter(u => u[3].toLowerCase().includes(search) || u[6].toString().includes(search));
+
+            container.innerHTML = filtered.map(u => `
+                <div onclick="${selectionMode ? `toggleSelect('${u[0]}')` : `viewProfile('${u[0]}')`}" 
+                     class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-4 ${selectedIds.has(u[0]) ? 'border-blue-600 bg-blue-50' : ''}">
+                    ${selectionMode ? `<input type="checkbox" ${selectedIds.has(u[0]) ? 'checked' : ''} class="w-5 h-5">` : ''}
+                    <img src="${u[2]}" class="w-14 h-14 rounded-full object-cover bg-gray-100 border">
                     <div class="flex-1">
                         <h4 class="font-bold">${u[3]}</h4>
-                        <p class="text-xs text-gray-500">${u[6]} | ${u[8]}</p>
+                        <p class="text-[10px] text-gray-500">${u[6]} | ${u[8]}</p>
                     </div>
-                    <div class="text-center bg-blue-50 px-3 py-1 rounded-lg">
-                        <p class="text-[10px] font-bold text-blue-400 uppercase">Total</p>
-                        <p class="font-black text-blue-700 text-lg">${u[13] || 0}</p>
+                    <div class="text-right">
+                        <div class="text-[10px] font-bold text-blue-500 uppercase">Points</div>
+                        <div class="text-xl font-black text-blue-800">${u[13] || 0}</div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function openProfile(id) {
-            const u = db.find(x => x[0] == id);
-            const history = logs.filter(l => l[1] == id);
-            document.getElementById('profData').innerHTML = `
-                <img src="${u[2]}" class="w-24 h-24 mx-auto rounded-full object-cover mb-4 border-4 border-blue-50">
-                <h2 class="text-2xl font-black text-center">${u[3]}</h2>
-                <p class="text-center font-bold text-green-600 mb-6">${u[11]}</p>
-                <div class="text-sm space-y-2 bg-slate-50 p-4 rounded-2xl">
-                    <p><b>Guardian:</b> ${u[4]} ${u[5]}</p>
-                    <p><b>Mobile:</b> ${u[6]}</p>
-                    <p><b>Age:</b> ${u[7]} | <b>Tehsil:</b> ${u[8]}</p>
-                    <p><b>Address:</b> ${u[12]}</p>
+        function viewProfile(id) {
+            const u = allData.find(x => x[0] == id);
+            const history = sewaLogs.filter(l => l[1] == id);
+            document.getElementById('profileContent').innerHTML = `
+                <div class="text-center">
+                    <img src="${u[2]}" class="w-24 h-24 mx-auto rounded-full object-cover shadow-lg mb-4 border-4 border-blue-50">
+                    <h2 class="text-2xl font-black">${u[3]}</h2>
+                    <p class="text-blue-600 font-bold mb-4">${u[11]}</p>
+                    <div class="grid grid-cols-2 gap-3 text-left text-xs bg-slate-50 p-4 rounded-2xl">
+                        <p><b>Guardian:</b> ${u[4]} ${u[5]}</p>
+                        <p><b>Mobile:</b> ${u[6]}</p>
+                        <p><b>Tehsil:</b> ${u[8]}</p>
+                        <p><b>Mantra:</b> ${u[9]}</p>
+                        <p class="col-span-2"><b>Address:</b> ${u[12]}</p>
+                    </div>
                 </div>
                 <div class="flex gap-2 mt-4">
-                    <button onclick="handleDelete('${u[0]}')" class="flex-1 bg-red-50 text-red-600 p-2 rounded-xl text-xs font-bold">DELETE</button>
-                    <button onclick="handleEdit('${u[0]}')" class="flex-1 bg-blue-50 text-blue-600 p-2 rounded-xl text-xs font-bold">EDIT</button>
+                    <button onclick="deleteEntry('${u[0]}')" class="flex-1 border-2 border-red-100 text-red-600 py-2 rounded-xl text-xs font-bold">DELETE</button>
+                    <button onclick="alert('Update Status in Sheets directly')" class="flex-1 border-2 border-blue-100 text-blue-600 py-2 rounded-xl text-xs font-bold">EDIT</button>
                 </div>
             `;
-            document.getElementById('swaHist').innerHTML = `<b>Sewa History:</b>` + history.map(h => `
-                <div class="flex justify-between text-[11px] border-b py-2 text-gray-500">
-                    <span>${new Date(h[3]).toLocaleDateString()} | ${h[4]}</span>
-                    <span class="font-bold text-blue-800">${h[5]} (+${h[6]} Pts)</span>
-                </div>
-            `).join('');
-            document.getElementById('addSwaBtn').onclick = () => addSewa(u[0], u[3]);
-            showModal('profMod');
-        }
-
-        async function handleSave(e) {
-            e.preventDefault();
-            const btn = document.getElementById('saveBtn');
-            btn.disabled = true; btn.innerText = "Processing...";
+            document.getElementById('historyLogs').innerHTML = `<p class="font-bold border-b pb-1">Service History:</p>` + 
+                history.map(h => `<div class="flex justify-between py-1 border-b"><span>${new Date(h[3]).toLocaleDateString()} (${h[4]})</span><span class="font-bold text-blue-700">${h[5]}</span></div>`).join('');
             
-            const file = document.getElementById('pic').files[0];
-            let imgBase64 = "";
-            if(file) imgBase64 = await compressImg(file);
-
-            const payload = {
-                action: "save",
-                img: imgBase64,
-                name: document.getElementById('name').value,
-                rel: document.getElementById('rel').value,
-                guard: document.getElementById('guard').value,
-                mob: document.getElementById('mob').value,
-                age: document.getElementById('age').value,
-                status: document.getElementById('stat').value,
-                tehsil: document.getElementById('teh').value,
-                mantra: document.getElementById('man').value,
-                occ: document.getElementById('occ').value,
-                addr: document.getElementById('addr').value
-            };
-            const r = await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
-            if(await r.text() === "Success") location.reload();
+            document.getElementById('recordSewaBtn').onclick = () => addSewa(u[0], u[3]);
+            openModal('profileModal');
         }
 
         async function addSewa(pid, pname) {
             const payload = {
                 action: "addSewa", pid, pname,
-                shift: document.getElementById('sTime').value,
-                stype: document.getElementById('sType').value,
-                pts: document.getElementById('sPts').value || 1
+                shift: document.getElementById('shiftTime').value,
+                stype: document.getElementById('sewaType').value,
+                pts: document.getElementById('sewaPoints').value || 1
             };
-            await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
-            alert("Sewa Recorded!"); location.reload();
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+            location.reload();
         }
 
-        function compressImg(file) {
-            return new Promise(res => {
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.readAsDataURL(file);
                 reader.onload = e => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = 300; canvas.height = 300;
-                        ctx.drawImage(img, 0, 0, 300, 300);
-                        res(canvas.toDataURL('image/jpeg', 0.7));
-                    };
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                    document.getElementById('photoText').classList.add('hidden');
                 };
-            });
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerText = "Compressing & Saving...";
+
+            const file = document.getElementById('photoInput').files[0];
+            let imgBase64 = "";
+
+            if(file) {
+                // Photo Compression
+                imgBase64 = await new Promise(res => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = ev => {
+                        const img = new Image();
+                        img.src = ev.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 400; canvas.height = 400;
+                            canvas.getContext('2d').drawImage(img, 0, 0, 400, 400);
+                            res(canvas.toDataURL('image/jpeg', 0.7));
+                        };
+                    };
+                });
+            }
+
+            const payload = {
+                action: "save",
+                img: imgBase64,
+                name: document.getElementById('regName').value,
+                rel: document.getElementById('regRel').value,
+                guard: document.getElementById('regGuard').value,
+                mob: document.getElementById('regMob').value,
+                age: document.getElementById('regAge').value,
+                status: document.getElementById('regStatus').value,
+                tehsil: document.getElementById('regTeh').value,
+                mantra: document.getElementById('regMan').value,
+                occ: document.getElementById('regOcc').value,
+                addr: document.getElementById('regAddr').value
+            };
+
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+            location.reload();
+        }
+
+        async function deleteEntry(id) {
+            if(!confirm("Are you sure?")) return;
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "delete", id }) });
+            location.reload();
         }
 
         function setTab(t) {
             activeTab = t;
-            ['All', 'Active', 'Inactive'].forEach(x => {
-                document.getElementById('t'+x).className = (x===t) ? 'border-b-4 border-white pb-1' : 'opacity-60';
-            });
-            render();
+            ['All', 'Active', 'Inactive'].forEach(x => document.getElementById('tab'+x).className = `flex-1 py-3 text-sm ${t===x ? 'active-tab' : 'text-gray-500'}`);
+            renderList();
         }
 
-        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function toggleSelectionMode() {
+            selectionMode = !selectionMode;
+            selectedIds.clear();
+            document.getElementById('pdfBar').classList.toggle('hidden', !selectionMode);
+            document.getElementById('selectBtn').innerText = selectionMode ? "Cancel" : "Select PDF";
+            renderList();
+        }
+
+        function toggleSelect(id) {
+            if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+            document.getElementById('selectedCount').innerText = `${selectedIds.size} Selected`;
+            renderList();
+        }
+
+        function exportToPDF() {
+            const printData = allData.filter(u => selectedIds.has(u[0]));
+            if(printData.length === 0) return alert("Select someone first!");
+            
+            let html = `<h2>Selected Sewadar List</h2><table border="1" style="width:100%; border-collapse: collapse;">
+                <tr><th>Photo</th><th>Name</th><th>Mobile</th><th>Location</th><th>Points</th></tr>`;
+            printData.forEach(u => {
+                html += `<tr><td><img src="${u[2]}" width="50"></td><td>${u[3]}</td><td>${u[6]}</td><td>${u[8]}</td><td>${u[13]}</td></tr>`;
+            });
+            html += `</table>`;
+            
+            const win = window.open('', '_blank');
+            win.document.write(html);
+            win.print();
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
         init();
     </script>
 </body>
