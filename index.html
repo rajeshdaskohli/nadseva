@@ -154,7 +154,7 @@
                 </div>
                 <div class="flex gap-2 mt-4">
                     <button onclick="deleteEntry('${u[0]}')" class="flex-1 border-2 border-red-100 text-red-600 py-2 rounded-xl text-xs font-bold">DELETE</button>
-                    <button onclick="alert('Update Status in Sheets directly')" class="flex-1 border-2 border-blue-100 text-blue-600 py-2 rounded-xl text-xs font-bold">EDIT</button>
+                    <button onclick="openEditModal('${u[0]}')" class="flex-1 border-2 border-blue-100 text-blue-600 py-2 rounded-xl text-xs font-bold">EDIT</button>
                 </div>
             `;
             document.getElementById('historyLogs').innerHTML = `<p class="font-bold border-b pb-1">Service History:</p>` + 
