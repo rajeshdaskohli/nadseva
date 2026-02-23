@@ -2,99 +2,172 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sewa Management Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sewa Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .active-tab { border-bottom: 4px solid #1e40af; color: #1e40af; font-weight: bold; }
-        @media print { .no-print { display: none; } }
-        /* इमेज लोड होने तक हल्का एनीमेशन */
-        .img-placeholder { background: #f3f4f6; position: relative; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; -webkit-tap-highlight-color: transparent; }
+        
+        /* Corporate Clean Inputs */
+        .input-clean {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            color: #1e293b;
+            transition: all 0.2s ease;
+            width: 100%;
+            outline: none;
+        }
+        .input-clean:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        
+        /* Clean List Card */
+        .list-card { background: #ffffff; border: 1px solid #f1f5f9; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: 0.2s; }
+        .list-card:active { background: #f8fafc; }
+
+        /* Typography & Layout */
+        .label-text { font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 4px; display: block; }
+        .data-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .data-row:last-child { border-bottom: none; }
+        
+        /* Modal Animation */
+        .fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom Scrollbar hide */
+        ::-webkit-scrollbar { display: none; }
     </style>
 </head>
-<body class="bg-slate-50 pb-20">
+<body class="pb-24">
 
-    <div class="bg-blue-700 p-4 sticky top-0 z-50 shadow-md no-print">
-        <h1 class="text-white text-center font-bold text-lg mb-3">Sewa Management System</h1>
-        <div class="flex gap-2">
-            <input type="text" id="searchInput" onkeyup="renderList()" placeholder="नाम या मोबाइल से सर्च..." class="w-full p-3 rounded-xl outline-none shadow-inner text-sm">
-            <button onclick="toggleSelectionMode()" id="selectBtn" class="bg-white text-blue-700 px-3 py-2 rounded-xl text-xs font-bold shadow">Select PDF</button>
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+            <h1 class="text-[18px] font-bold tracking-tight text-slate-900">Sewa<span class="text-blue-600 font-medium">Directory</span></h1>
         </div>
-    </div>
-
-    <div class="flex justify-around bg-white border-b sticky top-[116px] z-40 no-print">
-        <button onclick="setTab('All')" id="tabAll" class="flex-1 py-3 active-tab text-sm">All List</button>
-        <button onclick="setTab('Active')" id="tabActive" class="flex-1 py-3 text-gray-500 text-sm">Active</button>
-        <button onclick="setTab('Inactive')" id="tabInactive" class="flex-1 py-3 text-gray-500 text-sm">Inactive</button>
-    </div>
-
-    <div id="pdfBar" class="hidden bg-green-600 p-3 text-white flex justify-between items-center sticky top-[164px] z-30 no-print">
-        <span id="selectedCount">0 Selected</span>
-        <button onclick="exportToPDF()" class="bg-white text-green-700 px-4 py-1 rounded-lg font-bold text-sm">Export PDF</button>
-    </div>
-
-    <div id="mainList" class="p-4 space-y-3">
-        <div class="text-center py-10 text-gray-400">Loading Data...</div>
-    </div>
-
-    <div id="profileModal" class="fixed inset-0 bg-black/80 hidden z-[60] p-4 flex items-center justify-center no-print">
-        <div class="bg-white rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto p-6 relative">
-            <button onclick="closeModal('profileModal')" class="absolute top-4 right-4 text-3xl">&times;</button>
-            <div id="profileContent"></div>
-            
-            <div class="mt-6 border-t pt-4">
-                <h3 class="font-bold text-blue-700 mb-3">Add 2-Hour Shift</h3>
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <select id="shiftTime" class="p-2 border rounded-lg text-xs"></select>
-                    <select id="sewaType" class="p-2 border rounded-lg text-xs"></select>
-                </div>
-                <div class="flex gap-2">
-                    <input type="number" id="sewaPoints" value="1" class="w-20 p-2 border rounded-lg">
-                    <button id="recordSewaBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">Add Service</button>
-                </div>
+        
+        <div class="max-w-md mx-auto px-4 pb-4">
+            <div class="relative">
+                <svg class="w-5 h-5 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="searchInput" onkeyup="renderList()" placeholder="नाम या नंबर से खोजें..." class="input-clean pl-10 bg-slate-50 border-transparent focus:bg-white">
             </div>
-            <div id="historyLogs" class="mt-6 space-y-2 text-[11px]"></div>
         </div>
-    </div>
 
-    <button onclick="openModal('regModal')" class="fixed bottom-6 right-6 bg-blue-600 text-white w-16 h-16 rounded-full shadow-2xl text-4xl flex items-center justify-center no-print">+</button>
+        <div class="max-w-md mx-auto px-4 flex border-b border-slate-100">
+            <button onclick="setTab('All')" id="tabAll" class="flex-1 pb-3 text-[13px] font-semibold text-blue-600 border-b-2 border-blue-600 transition-all">All List</button>
+            <button onclick="setTab('Active')" id="tabActive" class="flex-1 pb-3 text-[13px] font-medium text-slate-500 border-b-2 border-transparent transition-all">Active</button>
+            <button onclick="setTab('Inactive')" id="tabInactive" class="flex-1 pb-3 text-[13px] font-medium text-slate-500 border-b-2 border-transparent transition-all">Inactive</button>
+        </div>
+    </header>
 
-    <div id="regModal" class="fixed inset-0 bg-black/80 hidden z-[60] p-4 overflow-y-auto no-print">
-        <div class="bg-white rounded-3xl w-full max-w-md mx-auto p-6">
-            <h2 class="text-xl font-bold mb-5 text-center text-blue-800">New Data Entry</h2>
-            <form id="regForm" onsubmit="handleFormSubmit(event)" class="space-y-4 text-sm">
-                <div class="text-center">
-                    <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="previewImage(this)">
-                    <label for="photoInput" class="cursor-pointer inline-block bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-300">
-                        <span id="photoText">📷 Camera / Gallery</span>
-                        <img id="imagePreview" class="hidden w-24 h-24 rounded-full mx-auto object-cover border-2 border-blue-400">
-                    </label>
+    <main id="mainList" class="p-4 space-y-3 max-w-md mx-auto">
+        <div class="text-center py-20 text-[13px] text-slate-400">Loading directory data...</div>
+    </main>
+
+    <div id="regModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm hidden z-[60] flex justify-center items-end sm:items-center">
+        <div class="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md h-[85vh] sm:h-auto overflow-y-auto p-6 fade-in-up relative shadow-2xl">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                <h2 class="text-[18px] font-semibold text-slate-800">New Registration</h2>
+                <button onclick="closeModal('regModal')" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <form id="regForm" class="space-y-4">
+                <div>
+                    <label class="label-text">Full Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="regName" placeholder="Enter full name" required class="input-clean">
                 </div>
-                <input type="text" id="regName" placeholder="Name" required class="w-full p-3 border rounded-xl">
-                <div class="flex gap-2">
-                    <select id="regRel" class="w-1/3 p-3 border rounded-xl"></select>
-                    <input type="text" id="regGuard" placeholder="Guardian Name" required class="w-2/3 p-3 border rounded-xl">
+                
+                <div class="flex gap-3">
+                    <div class="w-1/3">
+                        <label class="label-text">Relation</label>
+                        <select id="regRel" class="input-clean"></select>
+                    </div>
+                    <div class="w-2/3">
+                        <label class="label-text">Guardian Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="regGuard" placeholder="Father/Husband name" required class="input-clean">
+                    </div>
                 </div>
-                <input type="number" id="regMob" placeholder="Mobile Number" required class="w-full p-3 border rounded-xl">
-                <div class="flex gap-2">
-                    <input type="number" id="regAge" placeholder="Age" class="w-1/2 p-3 border rounded-xl">
-                    <select id="regStatus" class="w-1/2 p-3 border rounded-xl"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
+
+                <div class="flex gap-3">
+                    <div class="w-2/3">
+                        <label class="label-text">Mobile Number <span class="text-red-500">*</span></label>
+                        <input type="number" id="regMob" placeholder="10-digit number" required class="input-clean">
+                    </div>
+                    <div class="w-1/3">
+                        <label class="label-text">Age</label>
+                        <input type="number" id="regAge" placeholder="Years" class="input-clean">
+                    </div>
                 </div>
-                <select id="regTeh" class="w-full p-3 border rounded-xl"></select>
-                <select id="regMan" class="w-full p-3 border rounded-xl"></select>
-                <select id="regOcc" class="w-full p-3 border rounded-xl"></select>
-                <textarea id="regAddr" placeholder="Address" class="w-full p-3 border rounded-xl h-20"></textarea>
-                <button type="submit" id="submitBtn" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg">SAVE DATA</button>
-                <button type="button" onclick="closeModal('regModal')" class="w-full py-2 text-gray-400 text-xs">Cancel</button>
+
+                <div class="flex gap-3">
+                    <div class="w-1/2">
+                        <label class="label-text">Tehsil</label>
+                        <select id="regTeh" class="input-clean"></select>
+                    </div>
+                    <div class="w-1/2">
+                        <label class="label-text">Status</label>
+                        <select id="regStatus" class="input-clean">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="label-text">Mantra Status</label>
+                    <select id="regMan" class="input-clean"></select>
+                </div>
+
+                <div>
+                    <label class="label-text">Full Address</label>
+                    <textarea id="regAddr" placeholder="Complete address details" class="input-clean h-20 resize-none"></textarea>
+                </div>
+
+                <div class="flex gap-3 pt-4 border-t border-slate-100 mt-2">
+                    <button type="reset" class="flex-1 py-2.5 rounded-lg bg-slate-100 text-slate-600 text-[14px] font-medium hover:bg-slate-200 transition">Clear</button>
+                    <button type="button" onclick="handleFormSubmit(event)" id="submitBtn" class="flex-[2] py-2.5 rounded-lg bg-blue-600 text-white text-[14px] font-medium hover:bg-blue-700 shadow-sm transition">Save Record</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <script>
-        // यहाँ अपनी API URL डालें
-        const API_URL = "https://script.google.com/macros/s/AKfycbwgAaza1A6tEmJHTdINhcOFHffUXQW-4Nsf8PsK3bs58xCIUT5ZCssWj7FvLEsmsjY-/exec"; 
+    <div id="profileModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-[60] flex items-end sm:items-center justify-center">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-md h-[90vh] sm:h-auto overflow-y-auto fade-in-up relative shadow-2xl pb-6">
+            
+            <div class="h-28 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-t-3xl relative">
+                <button onclick="closeModal('profileModal')" class="absolute top-4 right-4 text-white/80 p-1 bg-black/10 rounded-full"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+            </div>
 
-        let allData = [], dropdowns = {}, sewaLogs = [], activeTab = 'All', selectionMode = false, selectedIds = new Set();
+            <div id="profileContent" class="-mt-12 px-6"></div>
+
+            <div class="mt-8 px-6">
+                <h3 class="text-[14px] font-semibold text-slate-800 border-b border-slate-200 pb-2 mb-4">Service History</h3>
+                <div class="flex items-end gap-2 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <div class="flex-1">
+                        <label class="label-text text-[10px]">From Date</label>
+                        <input type="date" id="dateFrom" class="input-clean py-1.5 px-2 text-[12px] bg-white">
+                    </div>
+                    <div class="flex-1">
+                        <label class="label-text text-[10px]">To Date</label>
+                        <input type="date" id="dateTo" class="input-clean py-1.5 px-2 text-[12px] bg-white">
+                    </div>
+                    <button id="filterDateBtn" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-[12px] font-medium h-[33px]">Apply</button>
+                </div>
+                <div id="historyLogs" class="space-y-2"></div>
+            </div>
+        </div>
+    </div>
+
+    <button onclick="openModal('regModal')" class="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 hover:scale-105 transition-all z-50">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+    </button>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbw2750EAb-OwkkJGYJesCAgAHquixlv0XbC1-yGIuOUVOvhSsKtTtk_ocTVdohmyX_6/exec";
+        let allData = [], dropdowns = {}, sewaLogs = [], activeTab = 'All';
 
         async function init() {
             try {
@@ -108,11 +181,15 @@
                     const list = dropdowns.slice(1).map(r => r[col-1]).filter(String);
                     document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join('');
                 };
-                fill('regRel', 1); fill('regTeh', 2); fill('regMan', 3); fill('regOcc', 4);
-                fill('sewaType', 5); fill('shiftTime', 6);
+                fill('regRel', 1); fill('regTeh', 2); fill('regMan', 3);
                 renderList();
-            } catch (e) { document.getElementById('mainList').innerHTML = `<p class="text-red-500 text-center">Load Failed! Check API URL.</p>`; }
+            } catch (e) {
+                document.getElementById('mainList').innerHTML = `<p class="text-center text-red-500 text-[13px] py-10">Connection error. Please check your URL.</p>`;
+            }
         }
+
+        // Helper function for Initials
+        const getInitials = (name) => name ? name.charAt(0).toUpperCase() : '?';
 
         function renderList() {
             const container = document.getElementById('mainList');
@@ -120,24 +197,38 @@
             let filtered = allData;
 
             if (activeTab !== 'All') filtered = filtered.filter(u => u[11] === activeTab);
-            if (search) filtered = filtered.filter(u => u[3].toLowerCase().includes(search) || u[6].toString().includes(search));
+            
+            if (search) {
+                filtered = filtered.filter(u => 
+                    u[3].toLowerCase().startsWith(search) || 
+                    u[6].toString().startsWith(search)
+                );
+            }
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-[13px] text-slate-400">No records found.</div>`;
+                return;
+            }
 
             container.innerHTML = filtered.map(u => `
-                <div onclick="${selectionMode ? `toggleSelect('${u[0]}')` : `viewProfile('${u[0]}')`}" 
-                     class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-4 ${selectedIds.has(u[0]) ? 'border-blue-600 bg-blue-50' : ''}">
-                    ${selectionMode ? `<input type="checkbox" ${selectedIds.has(u[0]) ? 'checked' : ''} class="w-5 h-5">` : ''}
-                    <div class="w-14 h-14 rounded-full overflow-hidden border bg-gray-50 flex-shrink-0">
-                        <img src="${u[2]}" 
-                             onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';" 
-                             class="w-full h-full object-cover">
+                <div class="list-card p-3 flex justify-between items-center">
+                    <div onclick="viewProfile('${u[0]}')" class="flex flex-1 items-center gap-3 cursor-pointer">
+                        <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-[16px] font-bold border border-blue-100 shrink-0">
+                            ${getInitials(u[3])}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-[14px] font-semibold text-slate-800 truncate">${u[3]}</h4>
+                            <p class="text-[12px] text-slate-500 mt-0.5 truncate">${u[6]} <span class="mx-1 text-slate-300">•</span> ${u[8]}</p>
+                        </div>
                     </div>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-sm">${u[3]}</h4>
-                        <p class="text-[10px] text-gray-500">${u[6]} | ${u[8]}</p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-[10px] font-bold text-blue-500 uppercase">Points</div>
-                        <div class="text-xl font-black text-blue-800">${u[13] || 0}</div>
+                    
+                    <div class="flex gap-2 pl-2">
+                        <a href="tel:${u[6]}" class="w-9 h-9 rounded-full bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 flex items-center justify-center transition-colors border border-slate-100">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                        </a>
+                        <a href="https://wa.me/91${u[6]}" class="w-9 h-9 rounded-full bg-slate-50 hover:bg-green-50 text-slate-400 hover:text-green-600 flex items-center justify-center transition-colors border border-slate-100">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.67-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                        </a>
                     </div>
                 </div>
             `).join('');
@@ -145,73 +236,110 @@
 
         function viewProfile(id) {
             const u = allData.find(x => x[0] == id);
-            const history = sewaLogs.filter(l => l[1] == id);
+            
+            // CRM Style Profile Layout
             document.getElementById('profileContent').innerHTML = `
-                <div class="text-center">
-                    <img src="${u[2]}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'" class="w-24 h-24 mx-auto rounded-full object-cover shadow-lg mb-4 border-4 border-blue-50">
-                    <h2 class="text-2xl font-black">${u[3]}</h2>
-                    <p class="text-blue-600 font-bold mb-4">${u[11]}</p>
-                    <div class="grid grid-cols-2 gap-3 text-left text-xs bg-slate-50 p-4 rounded-2xl">
-                        <p><b>Guardian:</b> ${u[4]} ${u[5]}</p>
-                        <p><b>Mobile:</b> ${u[6]}</p>
-                        <p><b>Tehsil:</b> ${u[8]}</p>
-                        <p><b>Mantra:</b> ${u[9]}</p>
-                        <p class="col-span-2"><b>Address:</b> ${u[12]}</p>
+                <div class="flex justify-between items-end mb-4">
+                    <div class="w-20 h-20 rounded-full bg-white p-1 shadow-md">
+                        <div class="w-full h-full bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-3xl font-bold border border-blue-100">
+                            ${getInitials(u[3])}
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-100 px-4 py-1.5 rounded-full text-center mb-2">
+                        <span class="text-[10px] font-bold text-blue-600 uppercase tracking-wide block leading-none">Total Points</span>
+                        <span class="text-[18px] font-black text-blue-800 leading-none">${u[13] || 0}</span>
                     </div>
                 </div>
-                <div class="flex gap-2 mt-4">
-                    <button onclick="deleteEntry('${u[0]}')" class="flex-1 border-2 border-red-100 text-red-600 py-2 rounded-xl text-xs font-bold">DELETE</button>
-                    <button onclick="alert('Update Status in Sheets directly')" class="flex-1 border-2 border-blue-100 text-blue-600 py-2 rounded-xl text-xs font-bold">EDIT</button>
+
+                <div class="mb-6">
+                    <h2 class="text-[22px] font-bold text-slate-900 leading-tight">${u[3]}</h2>
+                    <span class="inline-block mt-1 px-2.5 py-0.5 ${u[11] === 'Active' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'} text-[11px] font-semibold rounded-full">${u[11]} Member</span>
+                </div>
+
+                <div class="flex gap-3 mb-6">
+                    <a href="tel:${u[6]}" class="flex-1 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl flex justify-center items-center gap-2 font-medium text-[13px] hover:bg-slate-100 transition">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg> Call
+                    </a>
+                    <a href="https://wa.me/91${u[6]}" class="flex-1 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl flex justify-center items-center gap-2 font-medium text-[13px] hover:bg-slate-100 transition">
+                        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.67-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg> WhatsApp
+                    </a>
+                </div>
+
+                <div class="space-y-1 bg-white rounded-xl border border-slate-100 p-1">
+                    <div class="data-row px-3">
+                        <span class="text-[13px] text-slate-500">Mobile</span>
+                        <span class="text-[13px] font-medium text-slate-900">${u[6]}</span>
+                    </div>
+                    <div class="data-row px-3">
+                        <span class="text-[13px] text-slate-500">Guardian</span>
+                        <span class="text-[13px] font-medium text-slate-900">${u[4]} ${u[5]}</span>
+                    </div>
+                    <div class="data-row px-3">
+                        <span class="text-[13px] text-slate-500">Age</span>
+                        <span class="text-[13px] font-medium text-slate-900">${u[7] ? u[7]+' Years' : '-'}</span>
+                    </div>
+                    <div class="data-row px-3">
+                        <span class="text-[13px] text-slate-500">Tehsil</span>
+                        <span class="text-[13px] font-medium text-slate-900">${u[8]}</span>
+                    </div>
+                    <div class="data-row px-3">
+                        <span class="text-[13px] text-slate-500">Mantra</span>
+                        <span class="text-[13px] font-medium text-slate-900">${u[9]}</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                    <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">Registered Address</span>
+                    <p class="text-[13px] text-slate-800 leading-relaxed">${u[12]}</p>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <button onclick="deleteEntry('${u[0]}')" class="text-[12px] font-medium text-red-500 hover:text-red-700 px-4 py-2 rounded-lg hover:bg-red-50 transition">Delete Record</button>
                 </div>
             `;
-            document.getElementById('historyLogs').innerHTML = `<p class="font-bold border-b pb-1">Service History:</p>` + 
-                history.map(h => `<div class="flex justify-between py-1 border-b"><span>${new Date(h[3]).toLocaleDateString()} (${h[4]})</span><span class="font-bold text-blue-700">${h[5]}</span></div>`).join('');
             
-            document.getElementById('recordSewaBtn').onclick = () => addSewa(u[0], u[3]);
+            document.getElementById('filterDateBtn').onclick = () => filterHistory(u[0]);
+            filterHistory(u[0]);
             openModal('profileModal');
         }
 
-        function previewImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    document.getElementById('imagePreview').src = e.target.result;
-                    document.getElementById('imagePreview').classList.remove('hidden');
-                    document.getElementById('photoText').classList.add('hidden');
-                };
-                reader.readAsDataURL(input.files[0]);
+        function filterHistory(pid) {
+            const from = document.getElementById('dateFrom').value;
+            const to = document.getElementById('dateTo').value;
+            const logDiv = document.getElementById('historyLogs');
+            let filteredLogs = sewaLogs.filter(l => l[1] == pid);
+            if(from && to) {
+                const startDate = new Date(from);
+                const endDate = new Date(to);
+                filteredLogs = filteredLogs.filter(l => {
+                    const logDate = new Date(l[3]);
+                    return logDate >= startDate && logDate <= endDate;
+                });
             }
+            logDiv.innerHTML = filteredLogs.length > 0 ? filteredLogs.map(h => `
+                <div class="flex justify-between items-center py-2.5 border-b border-slate-100 last:border-0">
+                    <div>
+                        <p class="text-[13px] font-medium text-slate-800">${h[4]}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">${new Date(h[3]).toLocaleDateString('en-GB')}</p>
+                    </div>
+                    <span class="text-[13px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">+${h[5]} Pts</span>
+                </div>
+            `).join('') : `<p class="text-center py-4 text-[12px] text-slate-400">No activity recorded for this period.</p>`;
         }
 
         async function handleFormSubmit(e) {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "Processing & Saving...";
-
-            const file = document.getElementById('photoInput').files[0];
-            let imgBase64 = "";
-
-            if(file) {
-                imgBase64 = await new Promise(res => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = ev => {
-                        const img = new Image();
-                        img.src = ev.target.result;
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            const scale = Math.min(400 / img.width, 400 / img.height);
-                            canvas.width = img.width * scale;
-                            canvas.height = img.height * scale;
-                            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                            res(canvas.toDataURL('image/jpeg', 0.7));
-                        };
-                    };
-                });
+            
+            // Basic validation
+            if(!document.getElementById('regName').value || !document.getElementById('regMob').value) {
+                alert("Please fill the mandatory (*) fields."); return;
             }
 
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerText = "Saving...";
+            
             const payload = {
-                action: "save", img: imgBase64,
+                action: "save",
                 name: document.getElementById('regName').value,
                 rel: document.getElementById('regRel').value,
                 guard: document.getElementById('regGuard').value,
@@ -220,73 +348,44 @@
                 status: document.getElementById('regStatus').value,
                 tehsil: document.getElementById('regTeh').value,
                 mantra: document.getElementById('regMan').value,
-                occ: document.getElementById('regOcc').value,
                 addr: document.getElementById('regAddr').value
             };
-
             try {
-                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-                const txt = await r.text();
-                if(txt === "Success") { alert("Data Saved Successfully!"); location.reload(); }
-                else { throw new Error(txt); }
+                await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                location.reload();
             } catch(err) {
-                alert("Error: " + err.message);
-                btn.disabled = false; btn.innerText = "SAVE DATA";
+                alert("Database Error!");
+                btn.disabled = false; btn.innerText = "Save Record";
             }
         }
 
-        async function addSewa(pid, pname) {
-            const btn = document.getElementById('recordSewaBtn');
-            btn.innerText = "Adding..."; btn.disabled = true;
-            const payload = {
-                action: "addSewa", pid, pname,
-                shift: document.getElementById('shiftTime').value,
-                stype: document.getElementById('sewaType').value,
-                pts: document.getElementById('sewaPoints').value || 1
-            };
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-            location.reload();
-        }
-
         async function deleteEntry(id) {
-            if(!confirm("Are you sure?")) return;
+            if(!confirm("Are you sure you want to delete this record?")) return;
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: "delete", id }) });
             location.reload();
         }
 
         function setTab(t) {
             activeTab = t;
-            ['All', 'Active', 'Inactive'].forEach(x => document.getElementById('tab'+x).className = `flex-1 py-3 text-sm ${t===x ? 'active-tab' : 'text-gray-500'}`);
-            renderList();
-        }
-
-        function toggleSelectionMode() {
-            selectionMode = !selectionMode;
-            selectedIds.clear();
-            document.getElementById('pdfBar').classList.toggle('hidden', !selectionMode);
-            document.getElementById('selectBtn').innerText = selectionMode ? "Cancel" : "Select PDF";
-            renderList();
-        }
-
-        function toggleSelect(id) {
-            if(selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
-            document.getElementById('selectedCount').innerText = `${selectedIds.size} Selected`;
-            renderList();
-        }
-
-        function exportToPDF() {
-            const printData = allData.filter(u => selectedIds.has(u[0]));
-            let html = `<h2>Selected List</h2><table border="1" style="width:100%; border-collapse: collapse;"><tr><th>Photo</th><th>Name</th><th>Mobile</th><th>Points</th></tr>`;
-            printData.forEach(u => {
-                html += `<tr><td><img src="${u[2]}" width="40"></td><td>${u[3]}</td><td>${u[6]}</td><td>${u[13]}</td></tr>`;
+            ['All', 'Active', 'Inactive'].forEach(x => {
+                const btn = document.getElementById('tab'+x);
+                if(t === x) {
+                    btn.className = "flex-1 pb-3 text-[13px] font-semibold text-blue-600 border-b-2 border-blue-600 transition-all";
+                } else {
+                    btn.className = "flex-1 pb-3 text-[13px] font-medium text-slate-500 border-b-2 border-transparent transition-all";
+                }
             });
-            const win = window.open('', '_blank');
-            win.document.write(html + "</table>");
-            win.print();
+            renderList();
         }
 
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function openModal(id) { 
+            document.getElementById(id).classList.remove('hidden'); 
+            document.body.style.overflow = 'hidden'; // Stop background scrolling
+        }
+        function closeModal(id) { 
+            document.getElementById(id).classList.add('hidden'); 
+            document.body.style.overflow = 'auto';
+        }
 
         init();
     </script>
