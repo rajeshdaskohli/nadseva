@@ -3,255 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sewa Management Pro</title>
+    <title>Professional Sewa App</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .active-tab { border-bottom: 4px solid #1d4ed8; color: #1d4ed8; font-weight: bold; }
+    </style>
 </head>
-<body class="bg-gray-50 pb-20">
-
-    <div class="bg-blue-700 p-4 sticky top-0 z-40 shadow-md">
-        <h1 class="text-white text-center font-bold text-lg mb-3">Sewa Management System</h1>
-        <input type="text" id="search" onkeyup="filterData()" placeholder="नाम या मोबाइल से सर्च करें..." class="w-full p-2 rounded-lg outline-none shadow-inner">
-    </div>
-
-    <div class="flex justify-around bg-white border-b sticky top-[108px] z-40">
-        <button onclick="changeTab('All')" id="tabAll" class="py-3 px-4 border-b-4 border-blue-600 text-blue-600 font-bold">All List</button>
-        <button onclick="changeTab('Active')" id="tabActive" class="py-3 px-4 border-b-4 border-transparent">Active</button>
-        <button onclick="changeTab('Inactive')" id="tabInactive" class="py-3 px-4 border-b-4 border-transparent">Inactive</button>
-    </div>
-
-    <div id="listContainer" class="p-4 space-y-3">
-        <p class="text-center text-gray-500 mt-10">डाटा लोड हो रहा है...</p>
-    </div>
-
-    <button onclick="openRegisterForm()" class="fixed bottom-6 right-6 bg-blue-600 text-white w-14 h-14 rounded-full shadow-2xl text-3xl font-bold flex items-center justify-center">+</button>
-
-    <div id="profileModal" class="fixed inset-0 bg-black/50 hidden z-50 p-4">
-        <div class="bg-white rounded-2xl w-full max-w-md mx-auto mt-10 p-6 overflow-y-auto max-h-[80vh] relative">
-            <button onclick="closeProfile()" class="absolute top-4 right-4 text-2xl">×</button>
-            <div id="profileContent"></div>
+<body class="bg-gray-100 pb-24">
+    <div class="bg-blue-800 p-4 sticky top-0 z-50 shadow-lg">
+        <h1 class="text-white text-center font-bold text-xl mb-4">Sewa Management Pro</h1>
+        <div class="flex gap-2">
+            <input type="text" id="search" onkeyup="filterData()" placeholder="नाम या नंबर से सर्च..." class="w-full p-3 rounded-xl outline-none shadow-inner">
+            <button onclick="exportPDF()" class="bg-white p-2 rounded-xl text-blue-800 font-bold text-xs">PDF</button>
         </div>
     </div>
 
-    <div id="regModal" class="fixed inset-0 bg-black/50 hidden z-50 p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl w-full max-w-md mx-auto my-5 p-6 relative shadow-2xl">
-            <h2 class="text-xl font-bold mb-4 border-b pb-2 text-blue-700 text-center">Register</h2>
-            <form id="entryForm" onsubmit="saveData(event)">
-                <div class="space-y-3 text-sm">
-                    <div>
-                        <label class="font-bold">Photo *</label>
-<input type="file" id="photoInput" accept="image/*" required class="w-full border p-2 rounded bg-white">
-                    </div>
-                    <div>
-                        <label class="font-bold">Name *</label>
-                        <input type="text" id="name" placeholder="Enter Name" required class="w-full border p-2 rounded">
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="w-1/3">
-                            <label class="font-bold">Relation *</label>
-                            <select id="relation" required class="w-full border p-2 rounded">
-                                <option value="S/O">S/O</option>
-                                <option value="D/O">D/O</option>
-                                <option value="W/O">W/O</option>
-                            </select>
-                        </div>
-                        <div class="w-2/3">
-                            <label class="font-bold">Guardian's Name *</label>
-                            <input type="text" id="guardian" placeholder="Guardian Name" required class="w-full border p-2 rounded">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="font-bold text-red-600">Mobile Number (10 Digits) *</label>
-                        <input type="text" id="mobile" placeholder="98XXXXXXXX" maxlength="10" required oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full border p-2 rounded">
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="w-1/2">
-                            <label class="font-bold">Age *</label>
-                            <input type="number" id="age" placeholder="Age" required class="w-full border p-2 rounded">
-                        </div>
-                        <div class="w-1/2">
-                            <label class="font-bold">Status *</label>
-                            <select id="status" class="w-full border p-2 rounded">
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="font-bold">Tehsil *</label>
-                        <select id="tehsil" required class="w-full border p-2 rounded">
-                            <option value="Tehsil 1">Tehsil 1</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="font-bold">Mantra *</label>
-                        <select id="mantra" required class="w-full border p-2 rounded">
-                            <option value="Mantra 1">Mantra 1</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="font-bold">Occupation *</label>
-                        <select id="occupation" required class="w-full border p-2 rounded">
-                            <option value="Farmer">Farmer</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="font-bold text-gray-400">Address (Optional)</label>
-                        <textarea id="address" placeholder="Complete Address" class="w-full border p-2 rounded h-16"></textarea>
-                    </div>
+    <div class="flex justify-around bg-white border-b sticky top-[124px] z-40">
+        <button onclick="setTab('All')" id="tabAll" class="flex-1 py-3 active-tab">All List</button>
+        <button onclick="setTab('Active')" id="tabActive" class="flex-1 py-3 text-gray-500">Active</button>
+        <button onclick="setTab('Inactive')" id="tabInactive" class="flex-1 py-3 text-gray-500">Inactive</button>
+    </div>
+
+    <div id="listContainer" class="p-4 space-y-3">
+        <p class="text-center text-gray-400 mt-20">डेटा लोड हो रहा है...</p>
+    </div>
+
+    <button onclick="openForm('regModal')" class="fixed bottom-8 right-8 bg-blue-700 text-white w-16 h-16 rounded-full shadow-2xl text-4xl font-light flex items-center justify-center">+</button>
+
+    <div id="profileModal" class="fixed inset-0 bg-black/70 hidden z-[60] p-4 flex items-center justify-center">
+        <div class="bg-white rounded-3xl w-full max-w-md h-[90vh] overflow-y-auto p-6 relative">
+            <button onclick="closeModal('profileModal')" class="absolute top-4 right-4 text-3xl">&times;</button>
+            <div id="profileDetails"></div>
+        </div>
+    </div>
+
+    <div id="regModal" class="fixed inset-0 bg-black/70 hidden z-[60] p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl w-full max-w-md mx-auto my-5 p-6 shadow-2xl">
+            <h2 class="text-2xl font-bold mb-4 text-blue-800 text-center">New Entry</h2>
+            <form onsubmit="handleFormSubmit(event)" class="space-y-4 text-sm">
+                <div class="flex flex-col items-center gap-2 border-2 border-dashed p-4 rounded-2xl bg-gray-50">
+                    <input type="file" id="photo" accept="image/*" class="hidden" onchange="previewImg(this)">
+                    <label for="photo" class="cursor-pointer text-blue-600 font-bold">📷 Photo (Camera/Gallery)</label>
+                    <img id="pview" class="w-20 h-20 rounded-full hidden border-2 border-blue-400 object-cover">
                 </div>
-                <div class="flex gap-2 mt-6">
-                    <button type="button" onclick="closeRegisterForm()" class="flex-1 bg-gray-200 py-3 rounded-lg font-bold">Cancel</button>
-                    <button type="submit" id="submitBtn" class="flex-1 bg-black text-white py-3 rounded-lg font-bold">Submit</button>
+                <input type="text" id="name" placeholder="नाम" required class="w-full p-3 border rounded-xl">
+                <div class="flex gap-2">
+                    <select id="rel" class="w-1/3 p-3 border rounded-xl"></select>
+                    <input type="text" id="guardian" placeholder="Guardian Name" required class="w-2/3 p-3 border rounded-xl">
                 </div>
+                <input type="number" id="mobile" placeholder="Mobile Number" required class="w-full p-3 border rounded-xl">
+                <div class="flex gap-2">
+                    <input type="number" id="age" placeholder="उम्र" required class="w-1/2 p-3 border rounded-xl">
+                    <select id="status" class="w-1/2 p-3 border rounded-xl">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <select id="tehsil" class="w-full p-3 border rounded-xl"></select>
+                <select id="mantra" class="w-full p-3 border rounded-xl"></select>
+                <select id="occupation" class="w-full p-3 border rounded-xl"></select>
+                <textarea id="address" placeholder="पूरा पता" class="w-full p-3 border rounded-xl h-20"></textarea>
+                <button type="submit" id="subBtn" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg">SAVE DATA</button>
             </form>
         </div>
     </div>
 
     <script>
-        // --- 2. यहाँ अपनी WEB APP URL डालें ---
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5d6EkakLaXbLQhog_ZkC6a7ao0e7NrFq-vzGQUVR6_diviKU44da2-esukPVQOSUn/exec"; 
+        const API = "https://script.google.com/macros/s/AKfycbx8OMCOjs42dHMCrT7Q-5FjqOO_ifLk3vT76xQ99Ev-8-67wJRfOdsHHu4nApapy2va/exec";
+        let db = [], drops = {}, logs = [], activeCategory = 'All';
 
-        let rawData = [];
-        let currentTab = 'All';
+        async function init() {
+            try {
+                const r = await fetch(API);
+                const d = await r.json();
+                db = d.users.slice(1);
+                drops = d;
+                logs = d.logs.slice(1);
+                
+                const fill = (id, list) => { document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join(''); };
+                fill('rel', d.relations); fill('tehsil', d.tehsils); fill('mantra', d.mantras); fill('occupation', d.occupations);
+                
+                renderList();
+            } catch(e) { alert("Data Load Failed!"); }
+        }
 
-        async function loadData() {
-        try {
-        const res = await fetch(SCRIPT_URL);
-        const data = await res.json();
-        
-        // 1. डेटा को सही जगह सेट करें
-        rawData = data.users.slice(1); 
-        
-        // 2. ड्रॉपडाउन भरें
-        fillDropdown('tehsil', data.tehsils || []);
-        fillDropdown('mantra', data.mantras || []);
-        fillDropdown('occupation', data.occupations || []);
-        
-        filterData();
-        } catch (e) {
-        console.error("Loading Error:", e);
-        document.getElementById('listContainer').innerHTML = "डाटा लोड करने में समस्या: " + e.message;
-        }
-        }
-        
-        function fillDropdown(id, list) {
-        const select = document.getElementById(id);
-        select.innerHTML = '<option value="">Select Option</option>' + 
-        list.map(item => `<option value="${item}">${item}</option>`).join('');
-        }
-        
-
-        function renderList(items) {
+        function renderList() {
             const container = document.getElementById('listContainer');
-            if(items.length === 0) { container.innerHTML = "कोई डाटा नहीं मिला।"; return; }
-            container.innerHTML = items.map(row => `
-                <div onclick="showProfile('${row[0]}')" class="bg-white p-3 rounded-xl shadow-sm border flex items-center gap-4 active:scale-95 transition cursor-pointer">
-                    <img src="${row[2] || 'https://via.placeholder.com/150'}" class="w-14 h-14 rounded-full object-cover bg-gray-200 shadow-inner">
+            let filtered = db;
+            if(activeCategory !== 'All') filtered = db.filter(u => u[11] === activeCategory);
+            
+            const term = document.getElementById('search').value.toLowerCase();
+            if(term) filtered = filtered.filter(u => u[3].toLowerCase().includes(term) || u[6].toString().includes(term));
+
+            container.innerHTML = filtered.map(u => `
+                <div onclick="viewProfile('${u[0]}')" class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-4 active:scale-95 transition">
+                    <img src="${u[2]}" class="w-16 h-16 rounded-full object-cover bg-gray-100 shadow-inner">
                     <div class="flex-1">
-                        <h4 class="font-bold text-gray-800">${row[3]}</h4>
-                        <p class="text-sm text-gray-500">${row[6]}</p>
+                        <h4 class="font-bold text-lg">${u[3]}</h4>
+                        <p class="text-xs text-gray-500">${u[6]} | ${u[8]}</p>
                     </div>
-                    <span class="text-[10px] px-2 py-1 rounded-full font-bold ${row[11] === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${row[11]}</span>
+                    <div class="text-right">
+                        <span class="text-[10px] px-2 py-1 rounded-full font-bold ${u[11] == 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${u[11]}</span>
+                        <p class="text-blue-700 font-black text-lg mt-1">${u[13] || 0}</p>
+                    </div>
                 </div>
             `).join('');
         }
 
-        function filterData() {
-            const term = document.getElementById('search').value.toLowerCase();
-            let filtered = rawData;
-            if (currentTab !== 'All') filtered = filtered.filter(r => r[11] === currentTab);
-            if (term) filtered = filtered.filter(r => r[3].toLowerCase().includes(term) || r[6].toString().includes(term));
-            renderList(filtered);
-        }
+        function viewProfile(id) {
+            const u = db.find(x => x[0] == id);
+            const history = logs.filter(l => l[1] == id);
+            
+            document.getElementById('profileDetails').innerHTML = `
+                <div class="text-center">
+                    <img src="${u[2]}" class="w-32 h-32 mx-auto rounded-full border-4 border-blue-50 object-cover shadow-xl mb-4">
+                    <h2 class="text-2xl font-black">${u[3]}</h2>
+                    <p class="text-blue-600 font-bold mb-6">${u[8]} | ${u[11]}</p>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-left text-sm mb-6 bg-gray-50 p-4 rounded-2xl">
+                        <p><b>Relation:</b> ${u[4]} ${u[5]}</p>
+                        <p><b>Mobile:</b> ${u[6]}</p>
+                        <p><b>Age:</b> ${u[7]}</p>
+                        <p><b>Sewa:</b> ${u[13]}</p>
+                    </div>
 
-        function changeTab(tab) {
-            currentTab = tab;
-            ['All', 'Active', 'Inactive'].forEach(t => {
-                const el = document.getElementById('tab' + t);
-                el.className = `py-3 px-4 border-b-4 ${t === tab ? 'border-blue-600 text-blue-600 font-bold' : 'border-transparent'}`;
-            });
-            filterData();
-        }
+                    <div class="border-t pt-4">
+                        <h3 class="font-bold mb-2">Shift Assign (2-Hour)</h3>
+                        <div class="flex gap-2 mb-4">
+                            <select id="sShift" class="border p-2 rounded-xl text-xs w-1/2">
+                                <option>08AM-10AM</option><option>10AM-12PM</option><option>12PM-02PM</option><option>02PM-04PM</option>
+                                <option>04PM-06PM</option><option>06PM-08PM</option><option>08PM-10PM</option><option>10PM-12AM</option>
+                                <option>12AM-02AM</option><option>02AM-04AM</option><option>04AM-06AM</option><option>06AM-08AM</option>
+                            </select>
+                            <select id="sType" class="border p-2 rounded-xl text-xs w-1/2">
+                                ${drops.sewaTypes.map(t => `<option>${t}</option>`).join('')}
+                            </select>
+                        </div>
+                        <button onclick="addShift('${u[0]}', '${u[3]}')" class="w-full bg-green-600 text-white p-3 rounded-xl font-bold">Add This Shift</button>
+                    </div>
 
-        function openRegisterForm() { document.getElementById('regModal').classList.remove('hidden'); }
-        function closeRegisterForm() { document.getElementById('regModal').classList.add('hidden'); }
-        function closeProfile() { document.getElementById('profileModal').classList.add('hidden'); }
-
-        function showProfile(id) {
-            const person = rawData.find(r => r[0] == id);
-            const content = document.getElementById('profileContent');
-            content.innerHTML = `
-                <img src="${person[2]}" class="w-24 h-24 mx-auto rounded-full border-4 border-blue-100 mb-4 shadow-md object-cover">
-                <h2 class="text-2xl font-bold text-center mb-1">${person[3]}</h2>
-                <p class="text-center font-bold mb-4 ${person[11] === 'Active' ? 'text-green-600' : 'text-red-600'}">${person[11]}</p>
-                <div class="space-y-2 text-sm border-t pt-4">
-                    <p><b>Guardian:</b> ${person[4]} ${person[5]}</p>
-                    <p><b>Mobile:</b> ${person[6]}</p>
-                    <p><b>Age:</b> ${person[7]}</p>
-                    <p><b>Address:</b> ${person[12]}</p>
-                    <div class="bg-blue-50 p-3 rounded-lg mt-4 text-center">
-                        <p class="text-xs text-blue-400 font-bold uppercase">Total Sewa</p>
-                        <p class="text-3xl font-black text-blue-700">${person[13] || 0}</p>
+                    <div class="mt-8 text-left">
+                        <h3 class="font-bold border-b pb-2 mb-2">Service History</h3>
+                        ${history.length ? history.map(h => `
+                            <div class="flex justify-between text-xs py-2 border-b">
+                                <span>${new Date(h[3]).toLocaleDateString()} (${h[4]})</span>
+                                <span class="font-bold text-blue-700">${h[5]}</span>
+                            </div>
+                        `).join('') : '<p class="text-xs text-gray-400">No records found.</p>'}
                     </div>
                 </div>
-                <div class="flex gap-2 mt-6">
-                    <button class="flex-1 bg-gray-100 py-2 rounded-lg font-bold text-blue-600 border border-blue-200">Edit</button>
-                    <button onclick="deleteEntry('${person[0]}')" class="flex-1 bg-red-50 py-2 rounded-lg font-bold text-red-600 border border-red-200">Delete</button>
-                </div>
             `;
-            document.getElementById('profileModal').classList.remove('hidden');
+            openForm('profileModal');
         }
 
-        async function saveData(e) {
-    e.preventDefault();
-    const btn = document.getElementById('submitBtn');
-    btn.innerText = "Saving..."; btn.disabled = true;
+        async function addShift(pid, pname) {
+            const shift = document.getElementById('sShift').value;
+            const stype = document.getElementById('sType').value;
+            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: "addShift", pid, pname, shift, stype }) });
+            if(await res.text() === "Success") { alert("Shift Added!"); location.reload(); }
+        }
 
-    const fileInput = document.getElementById('photoInput');
-    if (fileInput.files.length === 0) {
-        alert("कृपया फोटो चुनें!");
-        btn.innerText = "Submit"; btn.disabled = false;
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.readAsDataURL(fileInput.files[0]);
-    reader.onload = async () => {
-        const payload = {
-            action: 'save',
-            name: document.getElementById('name').value,
-            relation: document.getElementById('relation').value,
-            guardian: document.getElementById('guardian').value,
-            mobile: document.getElementById('mobile').value,
-            age: document.getElementById('age').value,
-            status: document.getElementById('status').value,
-            tehsil: document.getElementById('tehsil').value,
-            mantra: document.getElementById('mantra').value,
-            occupation: document.getElementById('occupation').value,
-            address: document.getElementById('address').value,
-            image: reader.result
-        };
-
-        try {
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-            const result = await response.text();
-            if (result === "Success") {
-                alert("डाटा सफलतापूर्वक सेव हो गया!");
-                location.reload();
-            } else {
-                throw new Error(result);
+        function previewImg(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { 
+                    document.getElementById('pview').src = e.target.result;
+                    document.getElementById('pview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
             }
-        } catch (error) {
-            console.error("Save Error:", error);
-            alert("सेव करने में समस्या आई: " + error.message);
-            btn.innerText = "Submit"; btn.disabled = false;
         }
-    };
-}
-        loadData();
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('subBtn');
+            btn.disabled = true; btn.innerText = "Compressing & Saving...";
+
+            const file = document.getElementById('photo').files[0];
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const payload = {
+                    action: "saveUser",
+                    name: document.getElementById('name').value,
+                    relation: document.getElementById('rel').value,
+                    guardian: document.getElementById('guardian').value,
+                    mobile: document.getElementById('mobile').value,
+                    age: document.getElementById('age').value,
+                    status: document.getElementById('status').value,
+                    tehsil: document.getElementById('tehsil').value,
+                    mantra: document.getElementById('mantra').value,
+                    occupation: document.getElementById('occupation').value,
+                    address: document.getElementById('address').value,
+                    image: reader.result
+                };
+                const res = await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
+                if(await res.text() === "Success") { alert("Profile Created!"); location.reload(); }
+            };
+        }
+
+        function setTab(t) {
+            activeCategory = t;
+            ['All', 'Active', 'Inactive'].forEach(tab => {
+                document.getElementById('tab'+tab).className = `flex-1 py-3 ${t === tab ? 'active-tab' : 'text-gray-500'}`;
+            });
+            renderList();
+        }
+
+        function filterData() { renderList(); }
+        function openForm(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function exportPDF() { window.print(); }
+
+        init();
     </script>
 </body>
 </html>
