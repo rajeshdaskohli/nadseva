@@ -62,7 +62,8 @@
             <h2 class="text-xl font-bold mb-5 text-center text-blue-800">New Data Entry</h2>
             <form id="regForm" onsubmit="handleFormSubmit(event)" class="space-y-4 text-sm">
                 <div class="text-center">
-                    <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden" onchange="previewImage(this)">
+                    <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="previewImage(this)">
+
                     <label for="photoInput" class="cursor-pointer inline-block bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-300">
                         <span id="photoText">📷 Capture/Upload Photo</span>
                         <img id="imagePreview" class="hidden w-24 h-24 rounded-full mx-auto object-cover border-2 border-blue-400">
@@ -112,28 +113,24 @@
         }
 
         function renderList() {
-            const container = document.getElementById('mainList');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            let filtered = allData;
+    const container = document.getElementById('mainList');
+    // ... पुराना फिल्टर कोड ...
+    container.innerHTML = filtered.map(u => `
+        <div onclick="viewProfile('${u[0]}')" class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-4">
+            <img src="${u[2]}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'" 
+                 class="w-14 h-14 rounded-full object-cover bg-gray-100 border">
+            <div class="flex-1">
+                <h4 class="font-bold">${u[3]}</h4>
+                <p class="text-[10px] text-gray-500">${u[6]} | ${u[8]}</p>
+            </div>
+            <div class="text-right">
+                <div class="text-[10px] font-bold text-blue-500 uppercase">Points</div>
+                <div class="text-xl font-black text-blue-800">${u[13] || 0}</div>
+            </div>
+        </div>
+    `).join('');
+}
 
-            if (activeTab !== 'All') filtered = filtered.filter(u => u[11] === activeTab);
-            if (search) filtered = filtered.filter(u => u[3].toLowerCase().includes(search) || u[6].toString().includes(search));
-
-            container.innerHTML = filtered.map(u => `
-                <div onclick="${selectionMode ? `toggleSelect('${u[0]}')` : `viewProfile('${u[0]}')`}" 
-                     class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-4 ${selectedIds.has(u[0]) ? 'border-blue-600 bg-blue-50' : ''}">
-                    ${selectionMode ? `<input type="checkbox" ${selectedIds.has(u[0]) ? 'checked' : ''} class="w-5 h-5">` : ''}
-                    <img src="${u[2]}" class="w-14 h-14 rounded-full object-cover bg-gray-100 border">
-                    <div class="flex-1">
-                        <h4 class="font-bold">${u[3]}</h4>
-                        <p class="text-[10px] text-gray-500">${u[6]} | ${u[8]}</p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-[10px] font-bold text-blue-500 uppercase">Points</div>
-                        <div class="text-xl font-black text-blue-800">${u[13] || 0}</div>
-                    </div>
-                </div>
-            `).join('');
         }
 
         function viewProfile(id) {
