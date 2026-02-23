@@ -3,218 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Sewa App</title>
+    <title>Sewa Management Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .active-tab { border-bottom: 4px solid #1d4ed8; color: #1d4ed8; font-weight: bold; }
-    </style>
 </head>
-<body class="bg-gray-100 pb-24">
-    <div class="bg-blue-800 p-4 sticky top-0 z-50 shadow-lg">
-        <h1 class="text-white text-center font-bold text-xl mb-4">Sewa Management Pro</h1>
-        <div class="flex gap-2">
-            <input type="text" id="search" onkeyup="filterData()" placeholder="नाम या नंबर से सर्च..." class="w-full p-3 rounded-xl outline-none shadow-inner">
-            <button onclick="exportPDF()" class="bg-white p-2 rounded-xl text-blue-800 font-bold text-xs">PDF</button>
+<body class="bg-slate-50 pb-24">
+    <div class="bg-blue-800 p-4 sticky top-0 z-50 shadow-xl">
+        <input type="text" id="srch" onkeyup="render()" placeholder="नाम या मोबाइल से सर्च..." class="w-full p-3 rounded-xl outline-none shadow-inner mb-3">
+        <div class="flex justify-around text-white font-bold text-sm">
+            <button onclick="setTab('All')" id="tAll" class="border-b-4 border-white pb-1">All List</button>
+            <button onclick="setTab('Active')" id="tActive" class="opacity-60">Active</button>
+            <button onclick="setTab('Inactive')" id="tInactive" class="opacity-60">Inactive</button>
         </div>
     </div>
 
-    <div class="flex justify-around bg-white border-b sticky top-[124px] z-40">
-        <button onclick="setTab('All')" id="tabAll" class="flex-1 py-3 active-tab">All List</button>
-        <button onclick="setTab('Active')" id="tabActive" class="flex-1 py-3 text-gray-500">Active</button>
-        <button onclick="setTab('Inactive')" id="tabInactive" class="flex-1 py-3 text-gray-500">Inactive</button>
-    </div>
+    <div id="list" class="p-4 space-y-3"></div>
 
-    <div id="listContainer" class="p-4 space-y-3">
-        <p class="text-center text-gray-400 mt-20">डेटा लोड हो रहा है...</p>
-    </div>
+    <button onclick="showModal('regMod')" class="fixed bottom-6 right-6 bg-blue-600 text-white w-16 h-16 rounded-full shadow-2xl text-4xl">+</button>
 
-    <button onclick="openForm('regModal')" class="fixed bottom-8 right-8 bg-blue-700 text-white w-16 h-16 rounded-full shadow-2xl text-4xl font-light flex items-center justify-center">+</button>
-
-    <div id="profileModal" class="fixed inset-0 bg-black/70 hidden z-[60] p-4 flex items-center justify-center">
-        <div class="bg-white rounded-3xl w-full max-w-md h-[90vh] overflow-y-auto p-6 relative">
-            <button onclick="closeModal('profileModal')" class="absolute top-4 right-4 text-3xl">&times;</button>
-            <div id="profileDetails"></div>
+    <div id="profMod" class="fixed inset-0 bg-black/80 hidden z-[60] p-4 flex items-center justify-center">
+        <div class="bg-white rounded-3xl w-full max-w-md h-[85vh] overflow-y-auto p-6 relative">
+            <button onclick="hideModal('profMod')" class="absolute top-4 right-4 text-3xl font-light">&times;</button>
+            <div id="profData"></div>
+            <hr class="my-6">
+            <h3 class="font-bold text-blue-700 mb-3">Add Shift / Sewa Points</h3>
+            <div class="space-y-3">
+                <select id="sTime" class="w-full p-3 border rounded-xl bg-gray-50"></select>
+                <select id="sType" class="w-full p-3 border rounded-xl bg-gray-50"></select>
+                <input type="number" id="sPts" placeholder="पॉइंट्स (जैसे 1 या 2)" class="w-full p-3 border rounded-xl">
+                <button id="addSwaBtn" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold">Record Sewa</button>
+            </div>
+            <div id="swaHist" class="mt-6 text-sm"></div>
         </div>
     </div>
 
-    <div id="regModal" class="fixed inset-0 bg-black/70 hidden z-[60] p-4 overflow-y-auto">
+    <div id="regMod" class="fixed inset-0 bg-black/80 hidden z-[60] p-4 overflow-y-auto">
         <div class="bg-white rounded-3xl w-full max-w-md mx-auto my-5 p-6 shadow-2xl">
-            <h2 class="text-2xl font-bold mb-4 text-blue-800 text-center">New Entry</h2>
-            <form onsubmit="handleFormSubmit(event)" class="space-y-4 text-sm">
-                <div class="flex flex-col items-center gap-2 border-2 border-dashed p-4 rounded-2xl bg-gray-50">
-                    <input type="file" id="photo" accept="image/*" class="hidden" onchange="previewImg(this)">
-                    <label for="photo" class="cursor-pointer text-blue-600 font-bold">📷 Photo (Camera/Gallery)</label>
-                    <img id="pview" class="w-20 h-20 rounded-full hidden border-2 border-blue-400 object-cover">
-                </div>
+            <h2 class="text-xl font-bold mb-4 text-center text-blue-800">Registration</h2>
+            <form id="mainForm" onsubmit="handleSave(event)" class="space-y-3 text-sm">
+                <input type="file" id="pic" accept="image/*" class="w-full border p-2 rounded-xl">
                 <input type="text" id="name" placeholder="नाम" required class="w-full p-3 border rounded-xl">
                 <div class="flex gap-2">
                     <select id="rel" class="w-1/3 p-3 border rounded-xl"></select>
-                    <input type="text" id="guardian" placeholder="Guardian Name" required class="w-2/3 p-3 border rounded-xl">
+                    <input type="text" id="guard" placeholder="अभिभावक का नाम" required class="w-2/3 p-3 border rounded-xl">
                 </div>
-                <input type="number" id="mobile" placeholder="Mobile Number" required class="w-full p-3 border rounded-xl">
+                <input type="number" id="mob" placeholder="मोबाइल (10 अंक)" required class="w-full p-3 border rounded-xl">
                 <div class="flex gap-2">
-                    <input type="number" id="age" placeholder="उम्र" required class="w-1/2 p-3 border rounded-xl">
-                    <select id="status" class="w-1/2 p-3 border rounded-xl">
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
+                    <input type="number" id="age" placeholder="उम्र" class="w-1/2 p-3 border rounded-xl">
+                    <select id="stat" class="w-1/2 p-3 border rounded-xl"><option>Active</option><option>Inactive</option></select>
                 </div>
-                <select id="tehsil" class="w-full p-3 border rounded-xl"></select>
-                <select id="mantra" class="w-full p-3 border rounded-xl"></select>
-                <select id="occupation" class="w-full p-3 border rounded-xl"></select>
-                <textarea id="address" placeholder="पूरा पता" class="w-full p-3 border rounded-xl h-20"></textarea>
-                <button type="submit" id="subBtn" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg">SAVE DATA</button>
+                <select id="teh" class="w-full p-3 border rounded-xl"></select>
+                <select id="man" class="w-full p-3 border rounded-xl"></select>
+                <select id="occ" class="w-full p-3 border rounded-xl"></select>
+                <textarea id="addr" placeholder="पूरा पता" class="w-full p-3 border rounded-xl h-16"></textarea>
+                <button type="submit" id="saveBtn" class="w-full bg-blue-700 text-white py-4 rounded-xl font-bold">SUBMIT DATA</button>
+                <button type="button" onclick="hideModal('regMod')" class="w-full py-2 text-gray-400">Cancel</button>
             </form>
         </div>
     </div>
 
     <script>
-        const API = "https://script.google.com/macros/s/AKfycbx8OMCOjs42dHMCrT7Q-5FjqOO_ifLk3vT76xQ99Ev-8-67wJRfOdsHHu4nApapy2va/exec";
-        let db = [], drops = {}, logs = [], activeCategory = 'All';
+        const API = "https://script.google.com/macros/s/AKfycbz7wTGyCYDUiqQonJbt8Eab3OBJFQK-zF9V96X_RQcjm_XhjAAvft3AIzdDyOi8gDjO/exec";
+        let db = [], drops = [], logs = [], activeTab = 'All';
 
         async function init() {
             try {
                 const r = await fetch(API);
                 const d = await r.json();
                 db = d.users.slice(1);
-                drops = d;
                 logs = d.logs.slice(1);
+                drops = d.drops;
                 
-                const fill = (id, list) => { document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join(''); };
-                fill('rel', d.relations); fill('tehsil', d.tehsils); fill('mantra', d.mantras); fill('occupation', d.occupations);
-                
-                renderList();
+                const fill = (id, col) => {
+                    const list = d.drops.slice(1).map(row => row[col-1]).filter(String);
+                    document.getElementById(id).innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join('');
+                };
+                fill('rel', 1); fill('teh', 2); fill('man', 3); fill('occ', 4);
+                fill('sType', 5); fill('sTime', 6);
+                render();
             } catch(e) { alert("Data Load Failed!"); }
         }
 
-        function renderList() {
-            const container = document.getElementById('listContainer');
-            let filtered = db;
-            if(activeCategory !== 'All') filtered = db.filter(u => u[11] === activeCategory);
-            
-            const term = document.getElementById('search').value.toLowerCase();
-            if(term) filtered = filtered.filter(u => u[3].toLowerCase().includes(term) || u[6].toString().includes(term));
+        function render() {
+            const term = document.getElementById('srch').value.toLowerCase();
+            let data = db;
+            if(activeTab !== 'All') data = db.filter(u => u[11] === activeTab);
+            if(term) data = data.filter(u => u[3].toLowerCase().includes(term) || u[6].toString().includes(term));
 
-            container.innerHTML = filtered.map(u => `
-                <div onclick="viewProfile('${u[0]}')" class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-4 active:scale-95 transition">
-                    <img src="${u[2]}" class="w-16 h-16 rounded-full object-cover bg-gray-100 shadow-inner">
+            document.getElementById('list').innerHTML = data.map(u => `
+                <div onclick="openProfile('${u[0]}')" class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-4 active:scale-95 transition">
+                    <img src="${u[2]}" class="w-14 h-14 rounded-full object-cover bg-gray-200">
                     <div class="flex-1">
-                        <h4 class="font-bold text-lg">${u[3]}</h4>
+                        <h4 class="font-bold">${u[3]}</h4>
                         <p class="text-xs text-gray-500">${u[6]} | ${u[8]}</p>
                     </div>
-                    <div class="text-right">
-                        <span class="text-[10px] px-2 py-1 rounded-full font-bold ${u[11] == 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${u[11]}</span>
-                        <p class="text-blue-700 font-black text-lg mt-1">${u[13] || 0}</p>
+                    <div class="text-center bg-blue-50 px-3 py-1 rounded-lg">
+                        <p class="text-[10px] font-bold text-blue-400 uppercase">Total</p>
+                        <p class="font-black text-blue-700 text-lg">${u[13] || 0}</p>
                     </div>
                 </div>
             `).join('');
         }
 
-        function viewProfile(id) {
+        function openProfile(id) {
             const u = db.find(x => x[0] == id);
             const history = logs.filter(l => l[1] == id);
-            
-            document.getElementById('profileDetails').innerHTML = `
-                <div class="text-center">
-                    <img src="${u[2]}" class="w-32 h-32 mx-auto rounded-full border-4 border-blue-50 object-cover shadow-xl mb-4">
-                    <h2 class="text-2xl font-black">${u[3]}</h2>
-                    <p class="text-blue-600 font-bold mb-6">${u[8]} | ${u[11]}</p>
-                    
-                    <div class="grid grid-cols-2 gap-4 text-left text-sm mb-6 bg-gray-50 p-4 rounded-2xl">
-                        <p><b>Relation:</b> ${u[4]} ${u[5]}</p>
-                        <p><b>Mobile:</b> ${u[6]}</p>
-                        <p><b>Age:</b> ${u[7]}</p>
-                        <p><b>Sewa:</b> ${u[13]}</p>
-                    </div>
-
-                    <div class="border-t pt-4">
-                        <h3 class="font-bold mb-2">Shift Assign (2-Hour)</h3>
-                        <div class="flex gap-2 mb-4">
-                            <select id="sShift" class="border p-2 rounded-xl text-xs w-1/2">
-                                <option>08AM-10AM</option><option>10AM-12PM</option><option>12PM-02PM</option><option>02PM-04PM</option>
-                                <option>04PM-06PM</option><option>06PM-08PM</option><option>08PM-10PM</option><option>10PM-12AM</option>
-                                <option>12AM-02AM</option><option>02AM-04AM</option><option>04AM-06AM</option><option>06AM-08AM</option>
-                            </select>
-                            <select id="sType" class="border p-2 rounded-xl text-xs w-1/2">
-                                ${drops.sewaTypes.map(t => `<option>${t}</option>`).join('')}
-                            </select>
-                        </div>
-                        <button onclick="addShift('${u[0]}', '${u[3]}')" class="w-full bg-green-600 text-white p-3 rounded-xl font-bold">Add This Shift</button>
-                    </div>
-
-                    <div class="mt-8 text-left">
-                        <h3 class="font-bold border-b pb-2 mb-2">Service History</h3>
-                        ${history.length ? history.map(h => `
-                            <div class="flex justify-between text-xs py-2 border-b">
-                                <span>${new Date(h[3]).toLocaleDateString()} (${h[4]})</span>
-                                <span class="font-bold text-blue-700">${h[5]}</span>
-                            </div>
-                        `).join('') : '<p class="text-xs text-gray-400">No records found.</p>'}
-                    </div>
+            document.getElementById('profData').innerHTML = `
+                <img src="${u[2]}" class="w-24 h-24 mx-auto rounded-full object-cover mb-4 border-4 border-blue-50">
+                <h2 class="text-2xl font-black text-center">${u[3]}</h2>
+                <p class="text-center font-bold text-green-600 mb-6">${u[11]}</p>
+                <div class="text-sm space-y-2 bg-slate-50 p-4 rounded-2xl">
+                    <p><b>Guardian:</b> ${u[4]} ${u[5]}</p>
+                    <p><b>Mobile:</b> ${u[6]}</p>
+                    <p><b>Age:</b> ${u[7]} | <b>Tehsil:</b> ${u[8]}</p>
+                    <p><b>Address:</b> ${u[12]}</p>
+                </div>
+                <div class="flex gap-2 mt-4">
+                    <button onclick="handleDelete('${u[0]}')" class="flex-1 bg-red-50 text-red-600 p-2 rounded-xl text-xs font-bold">DELETE</button>
+                    <button onclick="handleEdit('${u[0]}')" class="flex-1 bg-blue-50 text-blue-600 p-2 rounded-xl text-xs font-bold">EDIT</button>
                 </div>
             `;
-            openForm('profileModal');
+            document.getElementById('swaHist').innerHTML = `<b>Sewa History:</b>` + history.map(h => `
+                <div class="flex justify-between text-[11px] border-b py-2 text-gray-500">
+                    <span>${new Date(h[3]).toLocaleDateString()} | ${h[4]}</span>
+                    <span class="font-bold text-blue-800">${h[5]} (+${h[6]} Pts)</span>
+                </div>
+            `).join('');
+            document.getElementById('addSwaBtn').onclick = () => addSewa(u[0], u[3]);
+            showModal('profMod');
         }
 
-        async function addShift(pid, pname) {
-            const shift = document.getElementById('sShift').value;
-            const stype = document.getElementById('sType').value;
-            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ action: "addShift", pid, pname, shift, stype }) });
-            if(await res.text() === "Success") { alert("Shift Added!"); location.reload(); }
-        }
-
-        function previewImg(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => { 
-                    document.getElementById('pview').src = e.target.result;
-                    document.getElementById('pview').classList.remove('hidden');
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        async function handleFormSubmit(e) {
+        async function handleSave(e) {
             e.preventDefault();
-            const btn = document.getElementById('subBtn');
-            btn.disabled = true; btn.innerText = "Compressing & Saving...";
+            const btn = document.getElementById('saveBtn');
+            btn.disabled = true; btn.innerText = "Processing...";
+            
+            const file = document.getElementById('pic').files[0];
+            let imgBase64 = "";
+            if(file) imgBase64 = await compressImg(file);
 
-            const file = document.getElementById('photo').files[0];
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const payload = {
-                    action: "saveUser",
-                    name: document.getElementById('name').value,
-                    relation: document.getElementById('rel').value,
-                    guardian: document.getElementById('guardian').value,
-                    mobile: document.getElementById('mobile').value,
-                    age: document.getElementById('age').value,
-                    status: document.getElementById('status').value,
-                    tehsil: document.getElementById('tehsil').value,
-                    mantra: document.getElementById('mantra').value,
-                    occupation: document.getElementById('occupation').value,
-                    address: document.getElementById('address').value,
-                    image: reader.result
-                };
-                const res = await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
-                if(await res.text() === "Success") { alert("Profile Created!"); location.reload(); }
+            const payload = {
+                action: "save",
+                img: imgBase64,
+                name: document.getElementById('name').value,
+                rel: document.getElementById('rel').value,
+                guard: document.getElementById('guard').value,
+                mob: document.getElementById('mob').value,
+                age: document.getElementById('age').value,
+                status: document.getElementById('stat').value,
+                tehsil: document.getElementById('teh').value,
+                mantra: document.getElementById('man').value,
+                occ: document.getElementById('occ').value,
+                addr: document.getElementById('addr').value
             };
+            const r = await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
+            if(await r.text() === "Success") location.reload();
+        }
+
+        async function addSewa(pid, pname) {
+            const payload = {
+                action: "addSewa", pid, pname,
+                shift: document.getElementById('sTime').value,
+                stype: document.getElementById('sType').value,
+                pts: document.getElementById('sPts').value || 1
+            };
+            await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
+            alert("Sewa Recorded!"); location.reload();
+        }
+
+        function compressImg(file) {
+            return new Promise(res => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = e => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = 300; canvas.height = 300;
+                        ctx.drawImage(img, 0, 0, 300, 300);
+                        res(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                };
+            });
         }
 
         function setTab(t) {
-            activeCategory = t;
-            ['All', 'Active', 'Inactive'].forEach(tab => {
-                document.getElementById('tab'+tab).className = `flex-1 py-3 ${t === tab ? 'active-tab' : 'text-gray-500'}`;
+            activeTab = t;
+            ['All', 'Active', 'Inactive'].forEach(x => {
+                document.getElementById('t'+x).className = (x===t) ? 'border-b-4 border-white pb-1' : 'opacity-60';
             });
-            renderList();
+            render();
         }
 
-        function filterData() { renderList(); }
-        function openForm(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-        function exportPDF() { window.print(); }
-
+        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
         init();
     </script>
 </body>
