@@ -62,7 +62,7 @@
             <h2 class="text-xl font-bold mb-5 text-center text-blue-800">New Data Entry</h2>
             <form id="regForm" onsubmit="handleFormSubmit(event)" class="space-y-4 text-sm">
                 <div class="text-center">
-                    <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden" onchange="previewImage(this)">
                     <label for="photoInput" class="cursor-pointer inline-block bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-300">
                         <span id="photoText">📷 Capture/Upload Photo</span>
                         <img id="imagePreview" class="hidden w-24 h-24 rounded-full mx-auto object-cover border-2 border-blue-400">
