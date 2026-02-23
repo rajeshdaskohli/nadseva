@@ -8,6 +8,8 @@
     <style>
         .active-tab { border-bottom: 4px solid #1e40af; color: #1e40af; font-weight: bold; }
         @media print { .no-print { display: none; } }
+        /* इमेज लोड होने तक हल्का एनीमेशन */
+        .img-placeholder { background: #f3f4f6; position: relative; overflow: hidden; }
     </style>
 </head>
 <body class="bg-slate-50 pb-20">
@@ -15,7 +17,7 @@
     <div class="bg-blue-700 p-4 sticky top-0 z-50 shadow-md no-print">
         <h1 class="text-white text-center font-bold text-lg mb-3">Sewa Management System</h1>
         <div class="flex gap-2">
-            <input type="text" id="searchInput" onkeyup="renderList()" placeholder="नाम या नंबर से सर्च करें..." class="w-full p-3 rounded-xl outline-none shadow-inner text-sm">
+            <input type="text" id="searchInput" onkeyup="renderList()" placeholder="नाम या मोबाइल से सर्च..." class="w-full p-3 rounded-xl outline-none shadow-inner text-sm">
             <button onclick="toggleSelectionMode()" id="selectBtn" class="bg-white text-blue-700 px-3 py-2 rounded-xl text-xs font-bold shadow">Select PDF</button>
         </div>
     </div>
@@ -47,7 +49,7 @@
                     <select id="sewaType" class="p-2 border rounded-lg text-xs"></select>
                 </div>
                 <div class="flex gap-2">
-                    <input type="number" id="sewaPoints" value="1" placeholder="Points" class="w-20 p-2 border rounded-lg">
+                    <input type="number" id="sewaPoints" value="1" class="w-20 p-2 border rounded-lg">
                     <button id="recordSewaBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">Add Service</button>
                 </div>
             </div>
@@ -58,22 +60,22 @@
     <button onclick="openModal('regModal')" class="fixed bottom-6 right-6 bg-blue-600 text-white w-16 h-16 rounded-full shadow-2xl text-4xl flex items-center justify-center no-print">+</button>
 
     <div id="regModal" class="fixed inset-0 bg-black/80 hidden z-[60] p-4 overflow-y-auto no-print">
-        <div class="bg-white rounded-3xl w-full max-w-md mx-auto p-6 shadow-2xl">
+        <div class="bg-white rounded-3xl w-full max-w-md mx-auto p-6">
             <h2 class="text-xl font-bold mb-5 text-center text-blue-800">New Data Entry</h2>
             <form id="regForm" onsubmit="handleFormSubmit(event)" class="space-y-4 text-sm">
                 <div class="text-center">
                     <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="previewImage(this)">
                     <label for="photoInput" class="cursor-pointer inline-block bg-gray-100 p-4 rounded-2xl border-2 border-dashed border-gray-300">
-                        <span id="photoText">📷 Capture/Upload Photo</span>
+                        <span id="photoText">📷 Camera / Gallery</span>
                         <img id="imagePreview" class="hidden w-24 h-24 rounded-full mx-auto object-cover border-2 border-blue-400">
                     </label>
                 </div>
-                <input type="text" id="regName" placeholder="Full Name" required class="w-full p-3 border rounded-xl">
+                <input type="text" id="regName" placeholder="Name" required class="w-full p-3 border rounded-xl">
                 <div class="flex gap-2">
                     <select id="regRel" class="w-1/3 p-3 border rounded-xl"></select>
                     <input type="text" id="regGuard" placeholder="Guardian Name" required class="w-2/3 p-3 border rounded-xl">
                 </div>
-                <input type="number" id="regMob" placeholder="Mobile (10 digits)" required class="w-full p-3 border rounded-xl">
+                <input type="number" id="regMob" placeholder="Mobile Number" required class="w-full p-3 border rounded-xl">
                 <div class="flex gap-2">
                     <input type="number" id="regAge" placeholder="Age" class="w-1/2 p-3 border rounded-xl">
                     <select id="regStatus" class="w-1/2 p-3 border rounded-xl"><option value="Active">Active</option><option value="Inactive">Inactive</option></select>
@@ -83,12 +85,13 @@
                 <select id="regOcc" class="w-full p-3 border rounded-xl"></select>
                 <textarea id="regAddr" placeholder="Address" class="w-full p-3 border rounded-xl h-20"></textarea>
                 <button type="submit" id="submitBtn" class="w-full bg-blue-700 text-white py-4 rounded-2xl font-bold text-lg">SAVE DATA</button>
+                <button type="button" onclick="closeModal('regModal')" class="w-full py-2 text-gray-400 text-xs">Cancel</button>
             </form>
         </div>
     </div>
 
     <script>
-        // अपनी Web App URL यहाँ डालें
+        // यहाँ अपनी API URL डालें
         const API_URL = "https://script.google.com/macros/s/AKfycbw2750EAb-OwkkJGYJesCAgAHquixlv0XbC1-yGIuOUVOvhSsKtTtk_ocTVdohmyX_6/exec"; 
 
         let allData = [], dropdowns = {}, sewaLogs = [], activeTab = 'All', selectionMode = false, selectedIds = new Set();
@@ -123,9 +126,13 @@
                 <div onclick="${selectionMode ? `toggleSelect('${u[0]}')` : `viewProfile('${u[0]}')`}" 
                      class="bg-white p-4 rounded-2xl shadow-sm border flex items-center gap-4 ${selectedIds.has(u[0]) ? 'border-blue-600 bg-blue-50' : ''}">
                     ${selectionMode ? `<input type="checkbox" ${selectedIds.has(u[0]) ? 'checked' : ''} class="w-5 h-5">` : ''}
-                    <img src="${u[2]}" class="w-14 h-14 rounded-full object-cover bg-gray-100 border">
+                    <div class="w-14 h-14 rounded-full overflow-hidden border bg-gray-50 flex-shrink-0">
+                        <img src="${u[2]}" 
+                             onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png';" 
+                             class="w-full h-full object-cover">
+                    </div>
                     <div class="flex-1">
-                        <h4 class="font-bold">${u[3]}</h4>
+                        <h4 class="font-bold text-sm">${u[3]}</h4>
                         <p class="text-[10px] text-gray-500">${u[6]} | ${u[8]}</p>
                     </div>
                     <div class="text-right">
@@ -141,7 +148,7 @@
             const history = sewaLogs.filter(l => l[1] == id);
             document.getElementById('profileContent').innerHTML = `
                 <div class="text-center">
-                    <img src="${u[2]}" class="w-24 h-24 mx-auto rounded-full object-cover shadow-lg mb-4 border-4 border-blue-50">
+                    <img src="${u[2]}" onerror="this.src='https://cdn-icons-png.flaticon.com/512/149/149071.png'" class="w-24 h-24 mx-auto rounded-full object-cover shadow-lg mb-4 border-4 border-blue-50">
                     <h2 class="text-2xl font-black">${u[3]}</h2>
                     <p class="text-blue-600 font-bold mb-4">${u[11]}</p>
                     <div class="grid grid-cols-2 gap-3 text-left text-xs bg-slate-50 p-4 rounded-2xl">
@@ -154,7 +161,7 @@
                 </div>
                 <div class="flex gap-2 mt-4">
                     <button onclick="deleteEntry('${u[0]}')" class="flex-1 border-2 border-red-100 text-red-600 py-2 rounded-xl text-xs font-bold">DELETE</button>
-                    <button onclick="openEditModal('${u[0]}')" class="flex-1 border-2 border-blue-100 text-blue-600 py-2 rounded-xl text-xs font-bold">EDIT</button>
+                    <button onclick="alert('Update Status in Sheets directly')" class="flex-1 border-2 border-blue-100 text-blue-600 py-2 rounded-xl text-xs font-bold">EDIT</button>
                 </div>
             `;
             document.getElementById('historyLogs').innerHTML = `<p class="font-bold border-b pb-1">Service History:</p>` + 
@@ -162,17 +169,6 @@
             
             document.getElementById('recordSewaBtn').onclick = () => addSewa(u[0], u[3]);
             openModal('profileModal');
-        }
-
-        async function addSewa(pid, pname) {
-            const payload = {
-                action: "addSewa", pid, pname,
-                shift: document.getElementById('shiftTime').value,
-                stype: document.getElementById('sewaType').value,
-                pts: document.getElementById('sewaPoints').value || 1
-            };
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-            location.reload();
         }
 
         function previewImage(input) {
@@ -190,13 +186,12 @@
         async function handleFormSubmit(e) {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerText = "Compressing & Saving...";
+            btn.disabled = true; btn.innerText = "Processing & Saving...";
 
             const file = document.getElementById('photoInput').files[0];
             let imgBase64 = "";
 
             if(file) {
-                // Photo Compression
                 imgBase64 = await new Promise(res => {
                     const reader = new FileReader();
                     reader.readAsDataURL(file);
@@ -205,8 +200,10 @@
                         img.src = ev.target.result;
                         img.onload = () => {
                             const canvas = document.createElement('canvas');
-                            canvas.width = 400; canvas.height = 400;
-                            canvas.getContext('2d').drawImage(img, 0, 0, 400, 400);
+                            const scale = Math.min(400 / img.width, 400 / img.height);
+                            canvas.width = img.width * scale;
+                            canvas.height = img.height * scale;
+                            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
                             res(canvas.toDataURL('image/jpeg', 0.7));
                         };
                     };
@@ -214,8 +211,7 @@
             }
 
             const payload = {
-                action: "save",
-                img: imgBase64,
+                action: "save", img: imgBase64,
                 name: document.getElementById('regName').value,
                 rel: document.getElementById('regRel').value,
                 guard: document.getElementById('regGuard').value,
@@ -228,6 +224,26 @@
                 addr: document.getElementById('regAddr').value
             };
 
+            try {
+                const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const txt = await r.text();
+                if(txt === "Success") { alert("Data Saved Successfully!"); location.reload(); }
+                else { throw new Error(txt); }
+            } catch(err) {
+                alert("Error: " + err.message);
+                btn.disabled = false; btn.innerText = "SAVE DATA";
+            }
+        }
+
+        async function addSewa(pid, pname) {
+            const btn = document.getElementById('recordSewaBtn');
+            btn.innerText = "Adding..."; btn.disabled = true;
+            const payload = {
+                action: "addSewa", pid, pname,
+                shift: document.getElementById('shiftTime').value,
+                stype: document.getElementById('sewaType').value,
+                pts: document.getElementById('sewaPoints').value || 1
+            };
             await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
             location.reload();
         }
@@ -260,17 +276,12 @@
 
         function exportToPDF() {
             const printData = allData.filter(u => selectedIds.has(u[0]));
-            if(printData.length === 0) return alert("Select someone first!");
-            
-            let html = `<h2>Selected Sewadar List</h2><table border="1" style="width:100%; border-collapse: collapse;">
-                <tr><th>Photo</th><th>Name</th><th>Mobile</th><th>Location</th><th>Points</th></tr>`;
+            let html = `<h2>Selected List</h2><table border="1" style="width:100%; border-collapse: collapse;"><tr><th>Photo</th><th>Name</th><th>Mobile</th><th>Points</th></tr>`;
             printData.forEach(u => {
-                html += `<tr><td><img src="${u[2]}" width="50"></td><td>${u[3]}</td><td>${u[6]}</td><td>${u[8]}</td><td>${u[13]}</td></tr>`;
+                html += `<tr><td><img src="${u[2]}" width="40"></td><td>${u[3]}</td><td>${u[6]}</td><td>${u[13]}</td></tr>`;
             });
-            html += `</table>`;
-            
             const win = window.open('', '_blank');
-            win.document.write(html);
+            win.document.write(html + "</table>");
             win.print();
         }
 
@@ -280,4 +291,4 @@
         init();
     </script>
 </body>
-    </html>
+</html>
